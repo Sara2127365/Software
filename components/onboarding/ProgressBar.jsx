@@ -14,7 +14,7 @@ const ProgressBar = ({ step = 1 }) => {
 function Item({ step, flag }) {
     return (
         <View
-            className={`h-2 rounded-full   ${
+            className={`h-2 rounded-full  ${
                 step === flag ? 'bg-main-rose w-14' : 'bg-[#EBCCCC] w-5'
             } `}
         ></View>
