@@ -5,6 +5,7 @@ import delivery from '../../assets/images/delivery.png';
 import track from '../../assets/images/track.png';
 import ProgressBar from './ProgressBar';
 import Btn from '../../common/Btn';
+import { Redirect, useRouter } from 'expo-router';
 
 const content = {
     1: {
@@ -29,6 +30,7 @@ const content = {
 };
 
 const SecondScreen = () => {
+    const router = useRouter();
     const [currentScreen, setCurrentScreen] = useState(content[1]);
 
     function handleTravel() {
@@ -41,17 +43,18 @@ const SecondScreen = () => {
                 ]
             );
         } else {
-            return;
+            handleSkip();
         }
     }
 
-    function handleSkip() {
-        return
-    }
+    const handleSkip = () => {
+        router.replace('/AuthRouter');
+    };
 
     return (
         <View className="h-full flex flex-col justify-between pt-10 pb-20  px-3 font-montserrat-r">
             <Text
+                onPress={handleSkip}
                 className="text-main-gray text-lg font-montserrat-sb"
                 style={{ textAlign: 'right' }}
             >
