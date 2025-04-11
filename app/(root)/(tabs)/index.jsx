@@ -1,4 +1,5 @@
-import React from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 const HomeScreen = () => {
   const topRestaurants = [
@@ -39,6 +40,16 @@ const HomeScreen = () => {
       offer: 'With any meal'
     },
   ];
+
+  // JUST FOR TESTING
+  useEffect(() => {
+    async function fn() {
+      await AsyncStorage.removeItem('onboardingCompleted');
+      console.log('DELETED');
+      
+    }
+    fn()
+  }, []);
 
   return (
     <ScrollView style={styles.container}>
