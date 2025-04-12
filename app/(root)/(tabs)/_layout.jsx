@@ -49,6 +49,27 @@ const _layout = () => {
                     )
                 }}
             />
+
+            <Tabs.Screen
+                name="About"
+                options={{
+                    title: 'About',
+                    headerShown: false,
+                    tabBarIcon: ({ focused }) => (
+                        <TabIcon
+                            focused={focused}
+                            Icon={
+                                <Icon
+                                    name="rocket"
+                                    size={17}
+                                    color={focused ? '#CC4C4C' : '#FF6969'}
+                                />
+                            }
+                            title="Home"
+                        />
+                    )
+                }}
+            />
             <Tabs.Screen
                 name="Restaurants"
                 options={{
