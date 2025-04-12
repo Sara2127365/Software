@@ -15,8 +15,6 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { signUp } from '../../../../utils/firebase/auth';
 import { createUserAccount } from '../../../../utils/backend helpers/authCalls';
 
-
-//هى هنا
 const faculties = [
     'Faculty of Engineering',
     'Faculty of Medicine',
@@ -26,13 +24,6 @@ const faculties = [
 ];
 
 const states = ['Student', 'Worker'];
-
-
-
-        
-
-
-
 
 export default function SignUp() {
     const [facultyModalVisible, setFacultyModalVisible] = useState(false);
@@ -50,22 +41,21 @@ export default function SignUp() {
         type: ''
     });
 
-    console.log(`selectedFaculty` , selectedFaculty);
-    console.log(`selectedState` , selectedState);
-    console.log(`formData` , formData);
-    
+    console.log(`selectedFaculty`, selectedFaculty);
+    console.log(`selectedState`, selectedState);
+    console.log(`formData`, formData);
 
     const router = useRouter();
 
     const handleSelectFaculty = faculty => {
         setSelectedFaculty(faculty);
-        setFormData(old=>({...old,faculty}))
+        setFormData(old => ({ ...old, faculty }));
         setFacultyModalVisible(false);
     };
 
     const handleSelectState = state => {
         setSelectedState(state);
-        setFormData(old=>({...old,type : state}))
+        setFormData(old => ({ ...old, type: state }));
         setStateModalVisible(false);
     };
 
@@ -74,12 +64,12 @@ export default function SignUp() {
     //     console.log(result);
     // }
 
-     async function handleSubmit() {
-            const result = await createUserAccount({ ...formData, table: 'users' })
-            if (result) {
-                // router.replace('/LoginPage')
-            }
+    async function handleSubmit() {
+        const result = await createUserAccount({ ...formData, table: 'users' });
+        if (result) {
+            router.replace('/LoginPage');
         }
+    }
 
     function handleChange(value, id) {
         setFormData(old => ({ ...old, [id]: value }));
@@ -236,14 +226,11 @@ export default function SignUp() {
                         style={styles.inputIcon}
                     />
                     <TextInput
-                    
                         onChangeText={value => handleChange(value, 'password')}
                         style={styles.textinput}
                         placeholder="Password"
                         secureTextEntry={true}
-
                     />
-                    
                 </View>
                 {/* SignUp Button */}
                 <TouchableOpacity
