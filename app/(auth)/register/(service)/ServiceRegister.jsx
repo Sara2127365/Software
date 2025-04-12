@@ -25,6 +25,7 @@ import {
     phoneIcon
 } from '../../../../constants/icons';
 import MultiSelect from '../../../../components/mini components/MultiSelect';
+import { signUp } from '../../../../utils/firebase/auth';
 
 const ServiceRegister = () => {
     const router = useRouter();
@@ -68,6 +69,11 @@ const ServiceRegister = () => {
             console.error('ERROR : ', err);
         }
     };
+
+    async function handleSubmit() {
+        const result = await signUp({ ...formData, table: 'service-users' });
+        console.log(result);
+    }
 
     return (
         <SafeAreaView className="flex-1 py-5 bg-main-white">
@@ -177,12 +183,15 @@ const ServiceRegister = () => {
                             title="categories"
                         />
                         <Input
+                            value={formData.password}
+                            onChange={value => handleChange(value, 'password')}
                             type="password"
                             placeholder="password"
                             icon={passwordIcon()}
                         />
                     </View>
                     <LargeBtn
+                        onPress={handleSubmit}
                         text="Register"
                         classes="py-4 mt-10 w-full bg-main-rose rounded-xl"
                         textClasses="text-lg"
