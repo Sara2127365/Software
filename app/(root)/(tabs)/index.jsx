@@ -1,22 +1,24 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { ImageBackground, View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import img from '../../../assets/images/res.jpg'
+import bgImg from '../../../assets/images/foodImg.png'
 const HomeScreen = () => {
   const topRestaurants = [
     {
       id: '1',
       name: 'Burger Palace',
-      image: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=500&auto=format&fit=crop'
+      image: img
     },
     {
       id: '2',
       name: 'Pizza Heaven',
-      image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=500&auto=format&fit=crop'
+      image: img
     },
     {
       id: '3',
       name: 'Sushi World',
-      image: 'https://images.unsplash.com/photo-1583623025817-d180a2221d0a?w=500&auto=format&fit=crop'
+      image: img
     },
   ];
 
@@ -46,37 +48,36 @@ const HomeScreen = () => {
     async function fn() {
       await AsyncStorage.removeItem('onboardingCompleted');
       console.log('DELETED');
-      
+
     }
     fn()
   }, []);
 
   return (
     <ScrollView style={styles.container}>
-      {/* Header Section */}
       <View style={styles.header}>
         <Text style={styles.welcomeText}>Welcome, User</Text>
         <Text style={styles.appName}>Toomila</Text>
       </View>
 
-      {/* Hero Section */}
+
+
       <View style={styles.heroSection}>
-        <Text style={styles.heroTitle}>Welcome to Toomila!</Text>
-        <Text style={styles.heroText}>Let's make food on campus easier than ever. Start ordering now!</Text>
-        <TouchableOpacity style={styles.exploreButton}>
-          <Text style={styles.exploreButtonText}>explore restaurants →</Text>
-        </TouchableOpacity>
+        <ImageBackground source={bgImg} resizeMode="cover" style={styles.image}>
+          <Text style={styles.heroTitle}>Welcome to Toomila!</Text>
+          <Text style={styles.heroText}>Let's make food on campus easier than ever. Start ordering now!</Text>
+          <TouchableOpacity style={styles.exploreButton}>
+            <Text style={styles.exploreButtonText}>explore restaurants →</Text>
+          </TouchableOpacity>
+        </ImageBackground>
       </View>
 
       <View style={styles.section}>
-
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Top Restaurants</Text>
-            <TouchableOpacity>
-              <Text style={styles.viewMore}>view more →</Text>
-            </TouchableOpacity>
-          </View>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Top Restaurants</Text>
+          <TouchableOpacity>
+            <Text style={styles.viewMore}>view more →</Text>
+          </TouchableOpacity>
 
         </View>
 
@@ -84,7 +85,7 @@ const HomeScreen = () => {
           {topRestaurants.map((item) => (
             <TouchableOpacity key={item.id} style={styles.itemCard}>
               <Image
-                source={{ uri: item.image }}
+                source={item.image}
                 style={styles.itemImage}
                 resizeMode="cover"
               />
@@ -94,7 +95,6 @@ const HomeScreen = () => {
         </ScrollView>
       </View>
 
-      {/* Top Offers Section */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Top Offers</Text>
@@ -119,7 +119,6 @@ const HomeScreen = () => {
         </ScrollView>
       </View>
 
-      {/* Ad Section */}
       <View style={styles.adSection}>
         <Image
           source={{ uri: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&auto=format&fit=crop' }}
@@ -129,13 +128,12 @@ const HomeScreen = () => {
         <Text style={styles.adText}>Special Student Discounts</Text>
       </View>
 
-      {/* Footer Section */}
       <View style={styles.footer}>
         <TouchableOpacity style={styles.knowMoreButton}>
           <Text style={styles.knowMoreText}>know more about us</Text>
         </TouchableOpacity>
       </View>
-    </ScrollView>
+    </ScrollView >
   );
 };
 
@@ -171,12 +169,23 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 8,
-    color: "white"
+    color: "CC4C4C"
   },
   heroText: {
     fontSize: 16,
     marginBottom: 16,
     color: "white"
+    , fontWeight: 'bold'
+    , fontSize: "10px"
+
+  },
+  image: {
+    flex: 1,
+    justifyContent: "flex-end",
+    height: '100%',
+    width: "100%",
+    borderRadius: "10px",
+
   },
   exploreButton: {
     alignSelf: 'flex-start',
