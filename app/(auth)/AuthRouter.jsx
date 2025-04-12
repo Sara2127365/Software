@@ -2,8 +2,11 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LargeBtn from '../../common/LargeBtn';
+import { useRouter } from 'expo-router';
+
 
 const AuthRouter = () => {
+    const router = useRouter();
     return (
         <SafeAreaView className="flex flex-col px-3 font-montserrat-r  bg-main-white h-full justify-end">
             <View className="flex flex-col py-20  items-center gap-10 h-[80%] justify-between">
@@ -23,12 +26,14 @@ const AuthRouter = () => {
                         textClasses="text-[#2B2B25] text-lg"
                         classes="bg-main-rose"
                         text="Log In"
+                        onPress={() => router.push('/auth/signIn')}
                     />
                     <LargeBtn
                         textClasses="text-[#2B2B25] text-lg"
                         classes="bg-white border border-gray-300"
                         text="Create Account"
-                    />
+                        onPress={() => router.push('./auth/signUp')}/>
+                       
                     <LargeBtn
                         textClasses="text-main-gray"
                         classes=""
