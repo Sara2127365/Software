@@ -10,7 +10,7 @@ export default function AppLayout() {
         const checkOnboardingStatus = async () => {
             try {
                 const status = await AsyncStorage.getItem(
-                    'onboardingCompleted'
+                    'status'
                 );
                 setIsOnboardingCompleted(status === 'true');
             } catch (err) {

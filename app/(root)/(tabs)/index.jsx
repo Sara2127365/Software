@@ -3,7 +3,10 @@ import React, { useEffect } from 'react';
 import { ImageBackground, View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import img from '../../../assets/images/res.jpg'
 import bgImg from '../../../assets/images/foodImg.png'
+import { handleLogout } from '../../../utils/backend helpers/authCalls';
+import { useRouter } from 'expo-router';
 const HomeScreen = () => {
+  const router = useRouter()
   const topRestaurants = [
     {
       id: '1',
@@ -53,11 +56,18 @@ const HomeScreen = () => {
     fn()
   }, []);
 
+  async function signout() {
+    const res = await handleLogout()
+    if (res) {
+      router.replace('/onBoarding')
+    }
+  }
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.welcomeText}>Welcome, User</Text>
-        <Text style={styles.appName}>Toomila</Text>
+        <TouchableOpacity onPress={signout}><Text style={styles.appName}>log out</Text></TouchableOpacity>
       </View>
 
 

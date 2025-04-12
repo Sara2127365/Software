@@ -19,7 +19,7 @@ const AuthRouter = () => {
     }
 
     function userLoginRoute() {
-        router.push('/user/login');
+        router.push('/LoginPage');
     }
 
 
