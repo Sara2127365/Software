@@ -7,9 +7,8 @@ const TabIcon = ({ focused, title, Icon }) => (
     <View className="flex-1 mt-3 flex flex-col items-center">
         {Icon}
         <Text
-            className={`${
-                focused ? 'text-[#CC4C4C]' : 'text-[#FF6969]'
-            } text-xs w-full text-center mt-1`}
+            className={`${focused ? 'text-[#CC4C4C]' : 'text-[#FF6969]'
+                } text-xs w-full text-center mt-1`}
         >
             {title}
         </Text>

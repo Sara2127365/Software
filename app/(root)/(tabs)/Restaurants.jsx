@@ -8,6 +8,8 @@ import {
     TouchableOpacity,
     Image
 } from 'react-native';
+import img from '../../../assets/images/foodImg.png';
+import font from '../../../assets/fonts/Montserrat-Black.ttf'
 const data = [
     {
         id: '1',
@@ -15,7 +17,7 @@ const data = [
         rating: '4.5 ★',
         description: 'eat your favourite food beside ur fav drink ...',
         tags: ['food', 'drinks'],
-        image: 'https://upload.wikimedia.org/wikipedia/commons/f/f9/Phoenicopterus_ruber_in_S%C3%A3o_Paulo_Zoo.jpg'
+        image: img
     },
     {
         id: '2',
@@ -23,7 +25,7 @@ const data = [
         rating: '4.5 ★',
         description: 'eat your favourite food beside ur fav drink ...',
         tags: ['food', 'drinks', 'coffee'],
-        image: 'https://upload.wikimedia.org/wikipedia/commons/f/f9/Phoenicopterus_ruber_in_S%C3%A3o_Paulo_Zoo.jpg'
+        image: img
     },
     {
         id: '3',
@@ -31,7 +33,7 @@ const data = [
         rating: '4.5 ★',
         description: 'eat your favourite food beside ur fav drink ...',
         tags: ['food'],
-        image: 'https://upload.wikimedia.org/wikipedia/commons/f/f9/Phoenicopterus_ruber_in_S%C3%A3o_Paulo_Zoo.jpg'
+        image: img
     }
 ];
 // const getdata = collection(db, "resturant")
@@ -80,15 +82,13 @@ const Restaurants = () => {
                 </TouchableOpacity>
             </View>
 
-            {/* Main Content with FlatList */}
             <FlatList
                 data={data}
                 keyExtractor={item => item.id}
                 renderItem={({ item }) => (
                     <View style={styles.card}>
-                        {/* Image at the top of the card */}
                         <Image
-                            source={{ uri: item.image }}
+                            source={item.image}
                             style={styles.cardImage}
                             resizeMode="cover"
                         />
@@ -136,7 +136,8 @@ const styles = StyleSheet.create({
     },
     welcomeText: {
         fontSize: 18,
-        color: '#333'
+        color: '#333',
+        fontStyle: font
     },
     appName: {
         fontSize: 20,
