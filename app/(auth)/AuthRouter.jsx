@@ -38,7 +38,7 @@ const AuthRouter = () => {
                         textClasses="text-[#2B2B25] text-lg"
                         classes="bg-main-rose"
                         text="Log In"
-                        onPress={() => router.push('/auth/signIn')}
+                        // onPress={() => router.push('/auth/signIn')}
                     />
                     <LargeBtn
                         textClasses="text-[#2B2B25] text-lg"
