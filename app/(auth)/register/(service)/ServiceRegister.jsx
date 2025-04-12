@@ -17,7 +17,6 @@ import LargeBtn from '../../../../common/LargeBtn';
 import { useRouter } from 'expo-router';
 import Input from '../../../../common/Input';
 import {
-    chevronDownIcon,
     emailIcon,
     informationIcon,
     passwordIcon,
@@ -26,6 +25,8 @@ import {
 } from '../../../../constants/icons';
 import MultiSelect from '../../../../components/mini components/MultiSelect';
 import { signUp } from '../../../../utils/firebase/auth';
+import Toast from 'react-native-toast-message';
+import { createServiceAccount } from '../../../../utils/backend helpers/authCalls';
 
 const ServiceRegister = () => {
     const router = useRouter();
@@ -55,7 +56,6 @@ const ServiceRegister = () => {
             const result = await DocumentPicker.getDocumentAsync({
                 type: 'image/*'
             });
-            console.log('result', result);
             if (result.type === 'success' || !result.canceled) {
                 console.log('Picked file:', result.assets[0]);
                 setFile(result.assets[0]);
@@ -71,8 +71,10 @@ const ServiceRegister = () => {
     };
 
     async function handleSubmit() {
-        const result = await signUp({ ...formData, table: 'service-users' });
-        console.log(result);
+        const result = await createServiceAccount(formData)
+        if (result) {
+            router.replace('/LoginPage')
+        }
     }
 
     return (

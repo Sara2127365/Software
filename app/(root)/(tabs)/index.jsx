@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   welcomeText: {
     fontSize: 18,
     color: '#333',
-    backgroundColor: "CC4C4C"
+    backgroundColor: '#CC4C4C',
   },
   appName: {
     fontSize: 20,
@@ -169,29 +169,26 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 8,
-    color: "CC4C4C"
+    color: '#CC4C4C',
   },
   heroText: {
     fontSize: 16,
     marginBottom: 16,
-    color: "white"
-    , fontWeight: 'bold'
-    , fontSize: "10px"
-
+    color: 'white',
+    fontWeight: 'bold',
   },
   image: {
     flex: 1,
-    justifyContent: "flex-end",
+    justifyContent: 'flex-end',
     height: '100%',
-    width: "100%",
-    borderRadius: "10px",
-
+    width: '100%',
+    borderRadius: 10,
   },
   exploreButton: {
     alignSelf: 'flex-start',
   },
   exploreButtonText: {
-    color: "white",
+    color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -205,14 +202,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
     backgroundColor: '#CC4C4C',
-    padding: "10px",
-    borderRadius: "5px"
+    padding: 10, 
+    borderRadius: 5,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     backgroundColor: '#CC4C4C',
-
   },
   viewMore: {
     color: 'white',
@@ -296,5 +292,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+
 
 export default HomeScreen;
