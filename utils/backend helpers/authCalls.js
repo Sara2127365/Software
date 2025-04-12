@@ -27,6 +27,31 @@ export async function createServiceAccount(formData) {
         });
     }
 }
+export async function createUserAccount(formData) {
+    try {
+        const result = await signUp({
+            ...formData,
+            table: 'users'
+        });
+        console.log('result result result', result);
+        if (result.success) {
+            Toast.show({
+                type: 'success',
+                text1: 'Account Created !',
+                text2: 'User registered successfully',
+                position: 'top'
+            });
+        }
+        return true;
+    } catch (error) {
+        console.log(`error error error`, error.message);
+        Toast.show({
+            type: 'error',
+            text1: error.message,
+            position: 'top'
+        });
+    }
+}
 
 export const handleLogin = async () => {
     try {

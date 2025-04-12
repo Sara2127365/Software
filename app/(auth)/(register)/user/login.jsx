@@ -96,7 +96,7 @@ export default function Login() {
                             }}
                         >
                             {' '}
-                            Donot have Account SignUp Here{' '}
+                        {' '}
                         </Text>
                     </Pressable>
                 </View>

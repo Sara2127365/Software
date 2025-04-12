@@ -13,6 +13,7 @@ import {
 import { useRouter } from 'expo-router';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { signUp } from '../../../../utils/firebase/auth';
+import { createUserAccount } from '../../../../utils/backend helpers/authCalls';
 
 
 //هى هنا
@@ -68,10 +69,17 @@ export default function SignUp() {
         setStateModalVisible(false);
     };
 
-    async function handleSubmit() {
-        const result = await signUp({ ...formData, table: 'users' });
-        console.log(result);
-    }
+    // async function handleSubmit() {
+    //     const result = await signUp({ ...formData, table: 'users' });
+    //     console.log(result);
+    // }
+
+     async function handleSubmit() {
+            const result = await createUserAccount({ ...formData, table: 'users' })
+            if (result) {
+                // router.replace('/LoginPage')
+            }
+        }
 
     function handleChange(value, id) {
         setFormData(old => ({ ...old, [id]: value }));
