@@ -58,9 +58,7 @@ export default function SignIn() {
           />
         </View>
 
-        <Pressable onPress={() => router.push("/auth/resetpassword")}>
-          <Text style={styles.forgot}>Forget password?</Text>
-        </Pressable>
+       
 
         {/* Sign In Button */}
         <TouchableOpacity style={styles.button}>

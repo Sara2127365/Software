@@ -63,19 +63,7 @@ export default function Login() {
                         placeholder=" Password"
                         secureTextEntry="hide"
                     />
-                    <Pressable
-                        onPress={() => router.push('/auth/resetpassword')}
-                    >
-                        <Text
-                            style={{
-                                color: 'red',
-                                fontFamily: 'outfit-bold'
-                            }}
-                        >
-                            {' '}
-                            Forgetpassword{' '}
-                        </Text>
-                    </Pressable>
+                   
                 </View>
 
                 <TouchableOpacity

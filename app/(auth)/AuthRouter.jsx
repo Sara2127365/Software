@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import LargeBtn from '../../common/LargeBtn';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+// or correct relative path
+
 
 const AuthRouter = () => {
     const router = useRouter();
@@ -11,6 +13,15 @@ const AuthRouter = () => {
     function serviceRegisterRoute() {
         router.push('/register/ServiceRegister');
     }
+
+    function userSignupRoute() {
+        router.push('/user/signUp');
+    }
+
+    function userLoginRoute() {
+        router.push('/user/login');
+    }
+
 
     function fakeLogin() {
         AsyncStorage.setItem('onboardingCompleted','true')
@@ -34,17 +45,18 @@ const AuthRouter = () => {
                 </View>
                 <View className="w-full flex flex-col gap-3">
                     <LargeBtn
-                        onPress={fakeLogin}
+                        onPress={userLoginRoute}
                         textClasses="text-[#2B2B25] text-lg"
                         classes="bg-main-rose"
                         text="Log In"
-                        // onPress={() => router.push('/auth/signIn')}
+                        
                     />
                     <LargeBtn
+                    onPress={userSignupRoute}
                         textClasses="text-[#2B2B25] text-lg"
                         classes="bg-white border border-gray-300"
                         text="Create Account"
-                        onPress={() => router.push('./auth/signUp')}/>
+                     />   
                        
                     <LargeBtn
                         onPress={serviceRegisterRoute}
