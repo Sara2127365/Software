@@ -162,7 +162,6 @@ const styles = StyleSheet.create({
   welcomeText: {
     fontSize: 18,
     color: '#333',
-    backgroundColor: '#CC4C4C',
   },
   appName: {
     fontSize: 20,
@@ -212,7 +211,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
     backgroundColor: '#CC4C4C',
-    padding: 10, 
+    padding: 10,
     borderRadius: 5,
   },
   sectionTitle: {

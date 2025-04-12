@@ -65,7 +65,7 @@ const _layout = () => {
                                     color={focused ? '#CC4C4C' : '#FF6969'}
                                 />
                             }
-                            title="Home"
+                            title="About"
                         />
                     )
                 }}

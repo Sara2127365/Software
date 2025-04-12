@@ -66,16 +66,16 @@ const About = () => {
     };
 
     return (
-        <Layout>
 
-            <FlatList
-                data={sections}
-                renderItem={renderItem}
-                keyExtractor={(item) => item.id}
-                contentContainerStyle={[styles.container, { padding: width * 0.05 }]}
-                showsVerticalScrollIndicator={true}
-            />
-        </Layout>
+
+        <FlatList
+            data={sections}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={[styles.container, { padding: width * 0.05 }]}
+            showsVerticalScrollIndicator={true}
+        />
+
     );
 };
 
