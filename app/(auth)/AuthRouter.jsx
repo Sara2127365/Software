@@ -3,10 +3,21 @@ import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LargeBtn from '../../common/LargeBtn';
 import { useRouter } from 'expo-router';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AuthRouter = () => {
     const router = useRouter();
+
+    function serviceRegisterRoute() {
+        router.push('/register/ServiceRegister');
+    }
+
+    function fakeLogin() {
+        AsyncStorage.setItem('onboardingCompleted','true')
+        console.log(AsyncStorage.getItem('onboardingCompleted'));
+        router.replace('/')
+    }
+
     return (
         <SafeAreaView className="flex flex-col px-3 font-montserrat-r  bg-main-white h-full justify-end">
             <View className="flex flex-col py-20  items-center gap-10 h-[80%] justify-between">
@@ -23,6 +34,7 @@ const AuthRouter = () => {
                 </View>
                 <View className="w-full flex flex-col gap-3">
                     <LargeBtn
+                        onPress={fakeLogin}
                         textClasses="text-[#2B2B25] text-lg"
                         classes="bg-main-rose"
                         text="Log In"
@@ -35,6 +47,7 @@ const AuthRouter = () => {
                         onPress={() => router.push('./auth/signUp')}/>
                        
                     <LargeBtn
+                        onPress={serviceRegisterRoute}
                         textClasses="text-main-gray"
                         classes=""
                         text="Apply For Your Restaurant"
