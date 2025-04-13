@@ -1,19 +1,39 @@
 import React, { useState } from 'react';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import Feather from '@expo/vector-icons/Feather';
+import LargeBtn from '../../../../common/LargeBtn';
 import {
     View,
     Text,
     TextInput,
     TouchableOpacity,
     Modal,
+    SafeAreaView,
     FlatList,
     StyleSheet,
     ScrollView,
-    Pressable
+    Pressable,
+    Image
+
 } from 'react-native';
+import MultiSelect2 from '../../../../components/mini components/MultiSelect2';
+
+import * as DocumentPicker from 'expo-document-picker';
 import { useRouter } from 'expo-router';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { signUp } from '../../../../utils/firebase/auth';
 import { createUserAccount } from '../../../../utils/backend helpers/authCalls';
+import Input from '../../../../common/Input';
+import {
+    checkIcon,
+    emailIcon,
+    informationIcon,
+    passwordIcon,
+    personIcon,
+    phoneIcon,
+    chevronDownIcon
+    
+} from '../../../../constants/icons';
 
 const faculties = [
     'Faculty of Engineering',
@@ -25,14 +45,18 @@ const faculties = [
 
 const states = ['Student', 'Worker'];
 
-export default function SignUp() {
+const SignUp=()=> {
+    const router = useRouter();
     const [facultyModalVisible, setFacultyModalVisible] = useState(false);
     const [stateModalVisible, setStateModalVisible] = useState(false);
 
     const [selectedFaculty, setSelectedFaculty] = useState(null);
     const [selectedState, setSelectedState] = useState(null);
-
+const [isMultiSelectOpen, setIsMultiSelectOpen] = useState(false);
+    const [file, setFile] = useState(null);
     const [formData, setFormData] = useState({
+        logo: null,
+        cover: null,
         name: '',
         email: '',
         faculty: '',
@@ -45,7 +69,7 @@ export default function SignUp() {
     console.log(`selectedState`, selectedState);
     console.log(`formData`, formData);
 
-    const router = useRouter();
+    
 
     const handleSelectFaculty = faculty => {
         setSelectedFaculty(faculty);
@@ -74,249 +98,165 @@ export default function SignUp() {
     function handleChange(value, id) {
         setFormData(old => ({ ...old, [id]: value }));
     }
+     const pickFile = async id => {
+            try {
+                const result = await DocumentPicker.getDocumentAsync({
+                    type: 'image/*'
+                });
+                if (result.type === 'success' || !result.canceled) {
+                    console.log('Picked file:', result.assets[0]);
+                    setFile(result.assets[0]);
+                    setFormData(old => ({ ...old, [id]: result.assets[0] }));
+                } else if (result.canceled) {
+                    console.log('User canceled the picker');
+                } else {
+                    console.log('result', result);
+                }
+            } catch (err) {
+                console.error('ERROR : ', err);
+            }
+        };
 
     return (
-        <View style={styles.mainContainer}>
-            <ScrollView style={styles.scroll}>
-                <Text style={styles.title}>Create New Account</Text>
-                {/* Fullname */}
-                <View style={styles.contianericon}>
-                    <FontAwesome
-                        name={'user'}
-                        size={24}
-                        color={'#9A9A9A'}
-                        style={styles.inputIcon}
-                    />
-                    <TextInput
-                        onChangeText={value => handleChange(value, 'name')}
-                        style={styles.textinput}
-                        placeholder="Fullname"
-                    />
-                </View>
-                {/* Email */}
-                <View style={styles.contianericon}>
-                    <FontAwesome
-                        name={'envelope'}
-                        size={24}
-                        color={'#9A9A9A'}
-                        style={styles.inputIcon}
-                    />
-                    <TextInput
-                        onChangeText={value => handleChange(value, 'email')}
-                        style={styles.textinput}
-                        placeholder="Email"
-                    />
-                </View>
-                {/* Phone */}
-                <View style={styles.contianericon}>
-                    <FontAwesome
-                        name={'phone'}
-                        size={24}
-                        color={'#9A9A9A'}
-                        style={styles.inputIcon}
-                    />
-                    <TextInput
-                        onChangeText={value =>
-                            handleChange(value, 'phoneNumber')
-                        }
-                        style={styles.textinput}
-                        placeholder="Phone"
-                    />
-                </View>
-                {/* Faculty Dropdown */}
-                <View style={styles.contianericon}>
-                    <FontAwesome
-                        name={'university'}
-                        size={24}
-                        color={'#9A9A9A'}
-                        style={styles.inputIcon}
-                    />
-                    <TouchableOpacity
-                        style={styles.dropdownButton}
-                        onPress={() => setFacultyModalVisible(true)}
-                    >
-                        <Text style={styles.dropdownText}>
-                            {selectedFaculty || 'Select Faculty'}
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-                <Modal
-                    visible={facultyModalVisible}
-                    transparent
-                    animationType="fade"
-                    onRequestClose={() => setFacultyModalVisible(false)}
+        <SafeAreaView className="flex-1 py-5 bg-main-white">
+            <View className="flex flex-row px-3 mt-5 items-center justify-between">
+                <AntDesign
+                    onPress={() => router.back()}
+                    name="arrowleft"
+                    size={24}
+                    color="#CC4C4C"
+                />
+                <Text className=" text-main-gray text-xl font-montserrat-r ">
+                    Create User account
+                </Text>
+                <Text className=" "></Text>
+            </View>
+            <ScrollView className="px-3">
+                <Pressable
+                    onPress={() => {
+                        setIsMultiSelectOpen(false);
+                    }}
                 >
-                    <TouchableOpacity
-                        style={styles.modalOverlay}
-                        activeOpacity={1}
-                        onPressOut={() => setFacultyModalVisible(false)}
-                    >
-                        <View style={styles.modalContent}>
-                            <FlatList
-                                data={faculties}
-                                keyExtractor={item => item}
-                                renderItem={({ item }) => (
-                                    <TouchableOpacity
-                                        style={styles.option}
-                                        onPress={() =>
-                                            handleSelectFaculty(item)
-                                        }
-                                    >
-                                        <Text style={styles.optionText}>
-                                            {item}
-                                        </Text>
-                                    </TouchableOpacity>
+                    <View>
+                        <View className="imgs-container mb-20 relative px-5 mt-5">
+                            <View className="cover bg-main-rose w-full h-32 rounded-xl">
+                                {formData?.cover && (
+                                    <Image
+                                        source={{ uri: formData.cover.uri }}
+                                        className="w-full absolute rounded-xl object-center h-full"
+                                        resizeMode="cover"
+                                    />
                                 )}
-                            />
-                        </View>
-                    </TouchableOpacity>
-                </Modal>
-                {/* State Dropdown */}
-                <View style={styles.contianericon}>
-                    <FontAwesome
-                        name={'user-circle'}
-                        size={24}
-                        color={'#9A9A9A'}
-                        style={styles.inputIcon}
-                    />
-                    <TouchableOpacity
-                        style={styles.dropdownButton}
-                        onPress={() => setStateModalVisible(true)}
-                    >
-                        <Text style={styles.dropdownText}>
-                            {selectedState || 'Select State'}
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-                <Modal
-                    visible={stateModalVisible}
-                    transparent
-                    animationType="fade"
-                    onRequestClose={() => setStateModalVisible(false)}
-                >
-                    <TouchableOpacity
-                        style={styles.modalOverlay}
-                        activeOpacity={1}
-                        onPressOut={() => setStateModalVisible(false)}
-                    >
-                        <View style={styles.modalContent}>
-                            <FlatList
-                                data={states}
-                                keyExtractor={item => item}
-                                renderItem={({ item }) => (
+                                <TouchableOpacity
+                                    onPress={() => pickFile('cover')}
+                                    className="size-14 absolute -right-5 -bottom-5 rounded-full flex items-center justify-center bg-main-rose border-4 border-white"
+                                >
+                                    <Feather
+                                        name="camera"
+                                        size={24}
+                                        color="white"
+                                    />
+                                </TouchableOpacity>
+                            </View>
+                            <View className="absolute w-full top-4 left-5 flex  flex-row justify-center">
+                                <View className="main-image flex items-center justify-center relative size-40 rounded-full bg-main-rose-light">
+                                    {formData?.logo && (
+                                        <Image
+                                            source={{ uri: formData.logo.uri }}
+                                            className="w-full absolute top-0 left-0 rounded-full object-center h-full"
+                                            resizeMode="cover"
+                                        />
+                                    )}
                                     <TouchableOpacity
-                                        style={styles.option}
-                                        onPress={() => handleSelectState(item)}
+                                        onPress={() => pickFile('logo')}
+                                        className="size-14 absolute -right-1 -bottom-1 rounded-full flex items-center justify-center bg-main-rose-light border-4 border-white"
                                     >
-                                        <Text style={styles.optionText}>
-                                            {item}
-                                        </Text>
+                                        <Feather
+                                            name="camera"
+                                            size={24}
+                                            color="white"
+                                        />
                                     </TouchableOpacity>
-                                )}
-                            />
+                                    <FontAwesome
+                                        name="user"
+                                        size={48}
+                                        color="white"
+                                    />
+                                </View>
+                            </View>
                         </View>
-                    </TouchableOpacity>
-                </Modal>
-                {/* Password */}
-                <View style={styles.contianericon}>
-                    <FontAwesome
-                        name={'lock'}
-                        size={24}
-                        color={'#9A9A9A'}
-                        style={styles.inputIcon}
-                    />
-                    <TextInput
-                        onChangeText={value => handleChange(value, 'password')}
-                        style={styles.textinput}
-                        placeholder="Password"
-                        secureTextEntry={true}
-                    />
-                </View>
-                {/* SignUp Button */}
-                <TouchableOpacity
-                    onPress={handleSubmit}
-                    style={styles.signupButton}
-                >
-                    <Text style={styles.signupText}>Sign Up</Text>
-                </TouchableOpacity>
-            </ScrollView>
-        </View>
-    );
-}
+                    </View>
 
-const styles = StyleSheet.create({
-    mainContainer: {
-        flex: 1,
-        backgroundColor: 'white',
-        paddingTop: 20,
-        padding: 15,
-        alignItems: 'center'
-    },
-    scroll: {
-        width: '100%'
-    },
-    title: {
-        fontSize: 30,
-        fontFamily: 'outfit-bold',
-        marginBottom: 20
-    },
-    contianericon: {
-        backgroundColor: '#FFFFFF',
-        flexDirection: 'row',
-        borderRadius: 20,
-        elevation: 10,
-        marginVertical: 10,
-        alignItems: 'center',
-        paddingHorizontal: 15,
-        height: 50,
-        width: '100%'
-    },
-    inputIcon: {
-        marginRight: 10
-    },
-    textinput: {
-        flex: 1
-    },
-    dropdownButton: {
-        flex: 1,
-        padding: 10
-    },
-    dropdownText: {
-        fontSize: 16,
-        color: '#333'
-    },
-    modalOverlay: {
-        flex: 1,
-        justifyContent: 'center',
-        backgroundColor: 'rgba(0,0,0,0.3)'
-    },
-    modalContent: {
-        margin: 20,
-        backgroundColor: 'white',
-        borderRadius: 10,
-        padding: 15,
-        elevation: 5
-    },
-    option: {
-        paddingVertical: 12,
-        paddingHorizontal: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: '#eee'
-    },
-    optionText: {
-        fontSize: 15
-    },
-    signupButton: {
-        padding: 15,
-        backgroundColor: 'red',
-        width: '100%',
-        marginTop: 15,
-        borderRadius: 15
-    },
-    signupText: {
-        fontFamily: 'outfit',
-        fontSize: 20,
-        color: 'white',
-        textAlign: 'center'
-    }
-});
+                    {/* INPUTS */}
+                    <View className="flex flex-col gap-4 ">
+                        <Input
+                            value={formData.name}
+                            onChange={value =>
+                                handleChange(value, 'name')
+                            }
+                            placeholder="Full name"
+                            icon={personIcon()}
+                        />
+                        <Input
+                            type="email"
+                            value={formData.email}
+                            onChange={value => handleChange(value, 'email')}
+                            placeholder="email"
+                            icon={emailIcon()}
+                        />
+                        <Input
+                            type="phone"
+                            value={formData.phoneNumber}
+                            onChange={value =>
+                                handleChange(value, 'phoneNumber')
+                            }
+                            placeholder="phone number"
+                            icon={phoneIcon()}
+                        />
+                       
+                       <Input
+                            type="states"
+                            value={formData.type}
+                            onChange={value =>
+                                handleChange(value, 'type')
+                            }
+                            placeholder="You are"
+                            icon={chevronDownIcon}
+                            
+                        />
+
+                      
+                       
+                      
+                        <MultiSelect2
+                            setIsMultiSelectOpen={setIsMultiSelectOpen}
+                            isMultiSelectOpen={isMultiSelectOpen}
+                            title="Faculty"
+                        />
+
+                        
+                         
+
+                        <Input
+                            value={formData.password}
+                            onChange={value => handleChange(value, 'password')}
+                            type="password"
+                            placeholder="password"
+                            icon={passwordIcon()}
+                        />
+                    </View>
+                    <LargeBtn
+                        onPress={handleSubmit}
+                        text="Register"
+                        classes="py-4 mt-10 w-full bg-main-rose rounded-xl"
+                        textClasses="text-lg"
+                    />
+                </Pressable>
+            </ScrollView>
+        </SafeAreaView>
+    );
+};
+
+export default   SignUp;
+
+    
