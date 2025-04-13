@@ -31,3 +31,6 @@ export const passwordIcon = (size, color) =>
 
 export const checkIcon = (size, color) =>
     generate(EvilIcons, 'check', size, color);
+
+export const universityIcon=(size,color)=>
+    generate(FontAwesome,'university',size,color);
