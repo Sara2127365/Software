@@ -13,6 +13,8 @@ import img from '../../../assets/images/res.jpg';
 import bgImg from '../../../assets/images/foodImg.png';
 import { handleLogout } from '../../../utils/backend helpers/authCalls';
 import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+
 const HomeScreen = () => {
     const router = useRouter();
     const topRestaurants = [
@@ -71,7 +73,7 @@ const HomeScreen = () => {
     }
 
     return (
-        <ScrollView style={styles.container}>
+        <ScrollView className="font-montserrat-r" style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.welcomeText}>Welcome, User</Text>
                 <TouchableOpacity onPress={signout}>
@@ -79,30 +81,55 @@ const HomeScreen = () => {
                 </TouchableOpacity>
             </View>
 
-            <View className='relative' style={styles.heroSection}>
-              <View className='w-full h-full left-0 top-0  absolute'>
-                <Image source={bgImg} resizeMode="contain"
-                    className=" size-20 mr-2 mt-4" />
+            <LinearGradient
+                colors={['#FFA0A0', '#CC4C4C']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                className="relative "
+                style={styles.heroSection}
+            >
+                <View className="w-full h-full flex items-center overflow-hidden justify-end flex-row left-0 top-0 opacity-15 absolute">
+                    <Image
+                        source={bgImg}
+                        resizeMode="contain"
+                        className="w-60"
+                    />
                 </View>
-                    <Text style={styles.heroTitle}>Welcome to Toomila!</Text>
-                    <Text style={styles.heroText}>
+
+                <View className="p-5 gap-8 font-montserrat-r text-white">
+                    <Text className="text-white font-montserrat-sb text-2xl">
+                        Welcome to Toomila!
+                    </Text>
+                    <Text className="text-white text-lg font-montserrat-r">
                         Let's make food on campus easier than ever. Start
                         ordering now!
                     </Text>
-                    <TouchableOpacity style={styles.exploreButton}>
-                        <Text style={styles.exploreButtonText}>
-                            explore restaurants →
-                        </Text>
-                    </TouchableOpacity>
-            </View>
+                    <View className="flex flex-row justify-end">
+                        <TouchableOpacity style={styles.exploreButton}>
+                            <Text className="!font-montserrat-sb text-white">
+                                explore restaurants →
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </LinearGradient>
 
             <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Top Restaurants</Text>
+                <LinearGradient
+                    colors={['#FF6969', '#FFCB2D']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.sectionHeader}
+                >
+                    <Text className="text-lg font-montserrat-sb">
+                        Top restaurants
+                    </Text>
                     <TouchableOpacity>
-                        <Text style={styles.viewMore}>view more →</Text>
+                        <Text className="text-sm font-montserrat-sb">
+                            view more →
+                        </Text>
                     </TouchableOpacity>
-                </View>
+                </LinearGradient>
 
                 <ScrollView
                     horizontal
@@ -110,8 +137,13 @@ const HomeScreen = () => {
                     style={styles.horizontalScroll}
                 >
                     {topRestaurants.map(item => (
-                        <TouchableOpacity key={item.id} style={styles.itemCard}>
+                        <TouchableOpacity
+                            className="shadow border border-gray-100 p-2"
+                            key={item.id}
+                            style={styles.itemCard}
+                        >
                             <Image
+                                className="rounded-lg"
                                 source={item.image}
                                 style={styles.itemImage}
                                 resizeMode="cover"
@@ -123,20 +155,34 @@ const HomeScreen = () => {
             </View>
 
             <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Top Offers</Text>
+                <LinearGradient
+                    colors={['#FF6969', '#FFCB2D']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.sectionHeader}
+                >
+                    <Text className="text-lg font-montserrat-sb">
+                        Top offers
+                    </Text>
                     <TouchableOpacity>
-                        <Text style={styles.viewMore}>view more →</Text>
+                        <Text className="text-sm font-montserrat-sb">
+                            view more →
+                        </Text>
                     </TouchableOpacity>
-                </View>
+                </LinearGradient>
                 <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     style={styles.horizontalScroll}
                 >
                     {topOffers.map(item => (
-                        <TouchableOpacity key={item.id} style={styles.itemCard}>
+                        <TouchableOpacity
+                            className="shadow border border-gray-100 p-2"
+                            key={item.id}
+                            style={styles.itemCard}
+                        >
                             <Image
+                                className="rounded-lg"
                                 source={{ uri: item.image }}
                                 style={styles.itemImage}
                                 resizeMode="cover"
@@ -194,10 +240,9 @@ const styles = StyleSheet.create({
         color: '#CC4C4C'
     },
     heroSection: {
-        padding: 16,
         backgroundColor: '#CC4C4C',
         margin: 16,
-        borderRadius: 8
+        borderRadius: 20
     },
     heroTitle: {
         fontSize: 22,
@@ -237,12 +282,11 @@ const styles = StyleSheet.create({
         marginBottom: 12,
         backgroundColor: '#CC4C4C',
         padding: 10,
-        borderRadius: 5
+        borderRadius: 10
     },
     sectionTitle: {
         fontSize: 18,
-        fontWeight: 'bold',
-        backgroundColor: '#CC4C4C'
+        fontWeight: 'bold'
     },
     viewMore: {
         color: 'white',
@@ -256,7 +300,7 @@ const styles = StyleSheet.create({
         marginRight: 12,
         borderRadius: 8,
         overflow: 'hidden',
-        backgroundColor: '#f5f5f5'
+        backgroundColor: '#ffffff'
     },
     itemImage: {
         width: '100%',
