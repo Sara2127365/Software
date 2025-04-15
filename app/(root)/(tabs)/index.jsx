@@ -79,12 +79,11 @@ const HomeScreen = () => {
                 </TouchableOpacity>
             </View>
 
-            <View style={styles.heroSection}>
-                <ImageBackground
-                    source={bgImg}
-                    resizeMode="cover"
-                    style={styles.image}
-                >
+            <View className='relative' style={styles.heroSection}>
+              <View className='w-full h-full left-0 top-0  absolute'>
+                <Image source={bgImg} resizeMode="contain"
+                    className=" size-20 mr-2 mt-4" />
+                </View>
                     <Text style={styles.heroTitle}>Welcome to Toomila!</Text>
                     <Text style={styles.heroText}>
                         Let's make food on campus easier than ever. Start
@@ -95,7 +94,6 @@ const HomeScreen = () => {
                             explore restaurants →
                         </Text>
                     </TouchableOpacity>
-                </ImageBackground>
             </View>
 
             <View style={styles.section}>
