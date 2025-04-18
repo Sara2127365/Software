@@ -39,7 +39,7 @@ const _layout = () => {
                             focused={focused}
                             Icon={
                                 <Icon
-                                    name="rocket"
+                                    name="home"
                                     size={17}
                                     color={focused ? '#CC4C4C' : '#FF6969'}
                                 />
@@ -79,7 +79,7 @@ const _layout = () => {
                         <TabIcon
                             Icon={
                                 <Icon
-                                    name="bars"
+                                    name="list"
                                     size={17}
                                     color={focused ? '#CC4C4C' : '#FF6969'}
                                 />
@@ -90,6 +90,27 @@ const _layout = () => {
                     )
                 }}
             />
+            <Tabs.Screen
+                name="profile"
+                options={{
+                    title: 'profile',
+                    headerShown: false,
+                    tabBarIcon: ({ focused }) => (
+                        <TabIcon
+                            focused={focused}
+                            Icon={
+                                <Icon
+                                    name="user"
+                                    size={17}
+                                    color={focused ? '#CC4C4C' : '#FF6969'}
+                                />
+                            }
+                            title="profile"
+                        />
+                    )
+                }}
+            />
+
         </Tabs>
     );
 };
