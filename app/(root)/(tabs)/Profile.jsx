@@ -135,7 +135,6 @@ export default function Profile() {
 
 
     };
-
     // Function to pick image from device gallery
     const pickDocument = async () => {
         try {
@@ -212,8 +211,8 @@ export default function Profile() {
 
                     <label style={styles.label}>Categories</label>
                     <Text style={styles.input}>
-                        {RestaurantData.categories.map((t) => {
-                            return <Text>  {t + "," + " "} </Text>
+                        {RestaurantData.categories.map((t, inex) => {
+                            return <Text key={inex}>  {t + "," + " "} </Text>
                         })}
 
                     </Text>
