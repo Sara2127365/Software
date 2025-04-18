@@ -91,13 +91,12 @@ const _layout = () => {
                 }}
             />
             <Tabs.Screen
-                name="profile"
+                name="Profile"
                 options={{
-                    title: 'profile',
+                    title: 'Profile',
                     headerShown: false,
                     tabBarIcon: ({ focused }) => (
                         <TabIcon
-                            focused={focused}
                             Icon={
                                 <Icon
                                     name="user"
@@ -105,11 +104,13 @@ const _layout = () => {
                                     color={focused ? '#CC4C4C' : '#FF6969'}
                                 />
                             }
-                            title="profile"
+                            focused={focused}
+                            title="Profile"
                         />
                     )
                 }}
             />
+
 
         </Tabs>
     );

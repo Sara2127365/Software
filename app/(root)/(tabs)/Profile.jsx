@@ -45,13 +45,6 @@ export default function Profile() {
             const userRef = ref(db, `service-users/65xToV4JwvbQomy3O2ayvSa182T2`);
             // await remove(userRef);
             console.log(userRef);
-
-            // console.log("User deleted successfully");
-            // const res = await handleLogout();
-            // if (res) {
-            //     router.replace('/onBoarding');
-            // }
-            // return true;
         } catch (error) {
             console.error("Error deleting user:", error);
             throw error;
