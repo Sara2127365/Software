@@ -1,19 +1,13 @@
 import { doc, getDoc, remove, updateDoc } from "firebase/firestore";
-import { db, storage, data } from '../../../../Software/utils/firebase/config'
+import { db, storage, auth } from '../../../utils/firebase/config'
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Loading from "../../../components/onboarding/Loading";
 import { getStorage, ref, getDownloadURL, uploadBytes } from 'firebase/storage';
 import MultiSelect from "../../../components/mini components/MultiSelect";
-import Feather from '@expo/vector-icons/Feather';
 import * as DocumentPicker from 'expo-document-picker';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { auth } from "../../../../Software/utils/firebase/config";
-import { useSearchParams } from "expo-router/build/hooks";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useNavigation } from "expo-router";
-import { handleLogout } from '../../../utils/backend helpers/authCalls';
 import '../../../app/globals'
 export default function Profile() {
     const navigation = useNavigation()
@@ -29,6 +23,7 @@ export default function Profile() {
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
                 setRestaurantData(docSnap.data())
+
                 return docSnap.data();
             } else {
                 console.log("No  user!");
@@ -42,9 +37,9 @@ export default function Profile() {
     //delete
     async function deleteUser() {
         try {
-            const userRef = ref(db, `service-users/65xToV4JwvbQomy3O2ayvSa182T2`);
+            const userRef = ref(db, `service-users/${id}`);
             // await remove(userRef);
-            console.log(userRef);
+            console.log(`User ${id} deleted successfully`);
         } catch (error) {
             console.error("Error deleting user:", error);
             throw error;
@@ -58,7 +53,6 @@ export default function Profile() {
     const updateUser = async () => {
         const userId = id;
         const userRef = doc(db, 'service-users', userId);
-
         try {
             await updateDoc(userRef, RestaurantData);
         } catch (error) {
@@ -98,8 +92,7 @@ export default function Profile() {
     useEffect(() => {
         getUserData(id)
         getImageUrl()
-
-    }, [id])
+    }, [])
 
 
 
@@ -116,19 +109,31 @@ export default function Profile() {
 
             const url = await getDownloadURL(imageRef);
             return url;
+
+
         } catch (error) {
             console.error('Error uploading image:', error);
             return null;
         }
+
     };
 
 
     const handleFileUpload = async (name) => {
+
         const fileUri = await pickDocument();
         if (fileUri) {
             const downloadUrl = await uploadImage(fileUri, name);
-            console.log('Uploaded & got URL:', downloadUrl);
+            // console.log('Uploaded & got URL:', downloadUrl);'
+
+            if (downloadUrl) {
+
+                getImageUrl()
+
+            }
         }
+
+
     };
 
     // Function to pick image from device gallery
@@ -143,7 +148,7 @@ export default function Profile() {
             if (result.canceled === true) return null;
 
             const file = result.assets[0];
-            console.log('Picked file:', file);
+            // console.log('Picked file:', file);
 
             return file.uri;
         } catch (error) {
@@ -172,7 +177,7 @@ export default function Profile() {
                 <View style={styles.coverSection}>
 
                     <TouchableOpacity
-                        onPress={() => handleFileUpload('covers')}
+                        onPress={() => handleFileUpload("covers")}
                         style={styles.coverBox}                    >
                         {cover.length > 0 ? <img style={styles.coverBox} src={cover} width={100} height={100} />
                             : <View style={styles.coverBox}>
@@ -188,7 +193,7 @@ export default function Profile() {
                         onPress={() => handleFileUpload("logos")}
 
                     >
-                        {logo.length > 0 ? <img src={logo} style={styles.avatar} size={50} width={100} height={100} />
+                        {logo.length > 0 ? <img src={logo} style={styles.avatar} />
                             : <View style={styles.avatar}>
                                 <Ionicons name="person" size={50} color="white" />
                             </View>}
@@ -206,26 +211,12 @@ export default function Profile() {
                     <TextInput keyboardType="numeric" autoCapitalize="none" style={styles.input} editable={editbtn} value={RestaurantData.phoneNumber} onChangeText={(e) => { handleChange("phoneNumber", e) }} />
 
                     <label style={styles.label}>Categories</label>
+                    <Text style={styles.input}>
+                        {RestaurantData.categories.map((t) => {
+                            return <Text>  {t + "," + " "} </Text>
+                        })}
 
-                    <MultiSelect
-                        // style={styles.input} value={RestaurantData.categories.join(', ')} editable={editbtn}
-                        onChangeText={(selectedValues) => {
-                            setRestaurantData((prev) => ({
-                                ...prev,
-                                categories: selectedValues,
-
-                            })
-
-                            );
-                            console.log(setRestaurantData.categories);
-
-                        }
-                        }
-                        setIsMultiSelectOpen={setIsMultiSelectOpen}
-                        isMultiSelectOpen={isMultiSelectOpen}
-                        title="categories"
-
-                    />
+                    </Text>
                     <label style={styles.label}>Info</label>
                     <TextInput style={styles.input} editable={editbtn} value={RestaurantData.info} onChangeText={(e) => { handleChange("info", e) }} />
                     <Pressable style={styles.deleteBtn} onPress={() => deleteUser()}>delete</Pressable>
@@ -298,7 +289,11 @@ const styles = StyleSheet.create({
         marginLeft: "50px",
         borderWidth: 4,
         borderColor: '#fff',
-        zIndex: "40"
+        zIndex: "40",
+        width: '100px',
+        height: "100px"
+
+
     },
     avatar2: {
         backgroundColor: '#FFA0A0',
