@@ -14,7 +14,12 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera to upload profile pictures.",
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photos to upload a profile picture."
+      }
+  
     },
     "android": {
       "adaptiveIcon": {
@@ -39,7 +44,10 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "expo-image-picker"
+      ]
     ],
     "experiments": {
       "typedRoutes": true

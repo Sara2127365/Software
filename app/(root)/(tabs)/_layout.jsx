@@ -110,6 +110,26 @@ const _layout = () => {
                     )
                 }}
             />
+            <Tabs.Screen
+                name="ProfileScreen"
+                options={{
+                    title: 'ProfileScreen',
+                    headerShown: false,
+                    tabBarIcon: ({ focused }) => (
+                        <TabIcon
+                            focused={focused}
+                            Icon={
+                                <Icon
+                                    name="user"
+                                    size={17}
+                                    color={focused ? '#CC4C4C' : '#FF6969'}
+                                />
+                            }
+                            title="ProfileScreen"
+                        />
+                    )
+                }}
+            />
 
 
         </Tabs>
