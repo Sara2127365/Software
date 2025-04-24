@@ -9,60 +9,45 @@ import {
     TouchableOpacity,
     Image
 } from 'react-native';
-import img from '../../../assets/images/res.jpg';
 import bgImg from '../../../assets/images/foodImg.png';
 import { handleLogout } from '../../../utils/backend helpers/authCalls';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { db } from '../../../utils/firebase/config';
+import { collection, getDocs } from 'firebase/firestore';
+import { useState } from 'react';
+
 
 const HomeScreen = () => {
     const router = useRouter();
-    const topRestaurants = [
-        {
-            id: '1',
-            name: 'Burger Palace',
-            image: img
-        },
-        {
-            id: '2',
-            name: 'Pizza Heaven',
-            image: img
-        },
-        {
-            id: '3',
-            name: 'Sushi World',
-            image: img
-        }
-    ];
+    const [topRestaurants, setTopRestaurants] = useState([]);
+    const [topOffers, setTopOffers] = useState([]);
 
-    const topOffers = [
-        {
-            id: '1',
-            name: '50% Off',
-            image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&auto=format&fit=crop',
-            offer: 'On all burgers'
-        },
-        {
-            id: '2',
-            name: 'Buy 1 Get 1',
-            image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop',
-            offer: 'Free pizza'
-        },
-        {
-            id: '3',
-            name: 'Free Drink',
-            image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&auto=format&fit=crop',
-            offer: 'With any meal'
-        }
-    ];
 
-    // JUST FOR TESTING
     useEffect(() => {
-        async function fn() {
-            await AsyncStorage.removeItem('onboardingCompleted');
-            console.log('DELETED');
+        async function fetchData() {
+            try {
+                const restaurantsSnap = await getDocs(collection(db, 'restaurants'));
+                const offersSnap = await getDocs(collection(db, 'offers'));
+
+                const restaurantsData = restaurantsSnap.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                const offersData = offersSnap.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                setTopRestaurants(restaurantsData);
+                setTopOffers(offersData);
+            } catch (error) {
+                console.error('Error fetching data: ', error);
+            }
         }
-        fn();
+
+        fetchData();
     }, []);
 
     async function signout() {
@@ -98,18 +83,22 @@ const HomeScreen = () => {
 
                 <View className="p-5 gap-8 font-montserrat-r text-white">
                     <Text className="text-white font-montserrat-sb text-2xl">
-                        Welcome to Toomila!
+                        Welcome to Toomiia!
                     </Text>
                     <Text className="text-white text-lg font-montserrat-r">
                         Let's make food on campus easier than ever. Start
                         ordering now!
                     </Text>
                     <View className="flex flex-row justify-end">
-                        <TouchableOpacity style={styles.exploreButton}>
+                        <TouchableOpacity
+                            style={styles.exploreButton}
+                            onPress={() => router.push('/Restaurants')}
+                        >
                             <Text className="!font-montserrat-sb text-white">
                                 explore restaurants →
                             </Text>
                         </TouchableOpacity>
+
                     </View>
                 </View>
             </LinearGradient>
@@ -124,11 +113,12 @@ const HomeScreen = () => {
                     <Text className="text-lg font-montserrat-sb">
                         Top restaurants
                     </Text>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => router.push('/Restaurants')}>
                         <Text className="text-sm font-montserrat-sb">
                             view more →
                         </Text>
                     </TouchableOpacity>
+
                 </LinearGradient>
 
                 <ScrollView
@@ -136,21 +126,24 @@ const HomeScreen = () => {
                     showsHorizontalScrollIndicator={false}
                     style={styles.horizontalScroll}
                 >
-                    {topRestaurants.map(item => (
-                        <TouchableOpacity
-                            className="shadow border border-gray-100 p-2"
-                            key={item.id}
-                            style={styles.itemCard}
-                        >
-                            <Image
-                                className="rounded-lg"
-                                source={item.image}
-                                style={styles.itemImage}
-                                resizeMode="cover"
-                            />
-                            <Text style={styles.itemName}>{item.name}</Text>
-                        </TouchableOpacity>
-                    ))}
+                    {topRestaurants.slice(0, 3).map(item => {
+                        return (
+                            <TouchableOpacity
+                                className="shadow border border-gray-100 p-2"
+                                key={item.id}
+                                style={styles.itemCard}
+                            >
+                                <Image
+                                    className="rounded-lg"
+                                    source={{ uri: item.image }}
+                                    style={styles.itemImage}
+                                    resizeMode="cover"
+                                />
+                                <Text style={styles.itemName}>{item.name}</Text>
+                            </TouchableOpacity>
+                        );
+                    })}
+
                 </ScrollView>
             </View>
 
@@ -164,37 +157,39 @@ const HomeScreen = () => {
                     <Text className="text-lg font-montserrat-sb">
                         Top offers
                     </Text>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => router.push('/Offers')}>
                         <Text className="text-sm font-montserrat-sb">
                             view more →
                         </Text>
                     </TouchableOpacity>
+
                 </LinearGradient>
                 <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     style={styles.horizontalScroll}
                 >
-                    {topOffers.map(item => (
-                        <TouchableOpacity
-                            className="shadow border border-gray-100 p-2"
-                            key={item.id}
-                            style={styles.itemCard}
-                        >
-                            <Image
-                                className="rounded-lg"
-                                source={{ uri: item.image }}
-                                style={styles.itemImage}
-                                resizeMode="cover"
-                            />
-                            <View style={styles.offerBadge}>
-                                <Text style={styles.offerText}>
-                                    {item.name}
-                                </Text>
-                            </View>
-                            <Text style={styles.itemOffer}>{item.offer}</Text>
-                        </TouchableOpacity>
-                    ))}
+                    {topOffers.slice(0, 3).map(item => {
+                        return (
+                            <TouchableOpacity
+                                className="shadow border border-gray-100 p-2"
+                                key={item.id}
+                                style={styles.itemCard}
+                            >
+                                <Image
+                                    className="rounded-lg"
+                                    source={{ uri: item.image }}
+                                    style={styles.itemImage}
+                                    resizeMode="cover"
+                                />
+                                <View style={styles.offerBadge}>
+                                    <Text style={styles.offerText}>{item.name}</Text>
+                                </View>
+                                <Text style={styles.itemOffer}>{item.offer}</Text>
+                            </TouchableOpacity>
+                        );
+                    })}
+
                 </ScrollView>
             </View>
 
@@ -209,8 +204,10 @@ const HomeScreen = () => {
                 <Text style={styles.adText}>Special Student Discounts</Text>
             </View>
 
+
+
             <View style={styles.footer}>
-                <TouchableOpacity style={styles.knowMoreButton}>
+                <TouchableOpacity style={styles.knowMoreButton} onPress={() => router.push('/About')}>
                     <Text style={styles.knowMoreText}>know more about us</Text>
                 </TouchableOpacity>
             </View>
@@ -363,7 +360,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: 24,
         borderWidth: 1,
         borderColor: '#FF6B6B',
-        borderRadius: 24
+        borderRadius: 24,
+        marginBottom: 80
     },
     knowMoreText: {
         color: '#FF6B6B',

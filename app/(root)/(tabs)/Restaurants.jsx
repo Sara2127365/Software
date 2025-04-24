@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
     View,
     Text,
@@ -8,58 +8,69 @@ import {
     TouchableOpacity,
     Image
 } from 'react-native';
-import img from '../../../assets/images/foodImg.png';
-import font from '../../../assets/fonts/Montserrat-Black.ttf'
-const data = [
-    {
-        id: '1',
-        name: 'Test Name',
-        rating: '4.5 ★',
-        description: 'eat your favourite food beside ur fav drink ...',
-        tags: ['food', 'drinks'],
-        image: img
-    },
-    {
-        id: '2',
-        name: 'Test Name',
-        rating: '4.5 ★',
-        description: 'eat your favourite food beside ur fav drink ...',
-        tags: ['food', 'drinks', 'coffee'],
-        image: img
-    },
-    {
-        id: '3',
-        name: 'Test Name',
-        rating: '4.5 ★',
-        description: 'eat your favourite food beside ur fav drink ...',
-        tags: ['food'],
-        image: img
-    }
-];
-// const getdata = collection(db, "resturant")
-// const getres = async () => {
-//     try {
-//         const data = await getDocs(getdata)
-//         console.log(data.docs.map((doc) => ({
-//             ...doc.data(),
-//             id: doc.id,
-//         })));
-
-//     }
-//     catch (err) {
-//         console.error(err)
-//     }
-// }
-// useEffect(() => {
-//     getres()
-// }, [])
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../../../utils/firebase/config';
+import { useRouter } from 'expo-router';
 
 const Restaurants = () => {
+    const [restaurants, setRestaurants] = useState([]);
+    const [filteredData, setFilteredData] = useState([]);
+    const [searchText, setSearchText] = useState('');
+    const [selectedTag, setSelectedTag] = useState(null);
+    const [selectedRating, setSelectedRating] = useState(null);
+    const [showRatingOptions, setShowRatingOptions] = useState(false);
+    const [ratingButtonPosition, setRatingButtonPosition] = useState({ x: 0, y: 0 });
+
+    const ratingButtonRef = useRef();
+    const router = useRouter();
+
+    const getRestaurants = async () => {
+        try {
+            const resSnapshot = await getDocs(collection(db, "restaurants"));
+            const data = resSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+            }));
+            setRestaurants(data);
+            setFilteredData(data);
+        } catch (err) {
+            console.error("Error fetching data:", err);
+        }
+    };
+
+    useEffect(() => {
+        getRestaurants();
+    }, []);
+
+    useEffect(() => {
+        let filtered = [...restaurants];
+
+        if (searchText) {
+            filtered = filtered.filter(item =>
+               item.name.toLowerCase().startsWith(searchText.toLowerCase())
+            );
+        }
+
+        if (selectedTag) {
+            filtered = filtered.filter(item =>
+                item.tags.includes(selectedTag)
+            );
+        }
+
+        if (selectedRating) {
+            filtered = filtered.filter(item =>
+                parseFloat(item.rating) >= selectedRating
+            );
+        }
+
+        setFilteredData(filtered);
+    }, [searchText, selectedTag, selectedRating, restaurants]);
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.welcomeText}>Welcome , User</Text>
-                <Text style={styles.appName}>Toomila</Text>
+                <Text style={styles.welcomeText}>Welcome, User</Text>
+                <Text style={styles.appName}>Toomiia</Text>
             </View>
 
             <View style={styles.searchContainer}>
@@ -67,56 +78,90 @@ const Restaurants = () => {
                     style={styles.searchInput}
                     placeholder="Search ..."
                     placeholderTextColor="#999"
+                    value={searchText}
+                    onChangeText={setSearchText}
                 />
             </View>
 
             <View style={styles.filterContainer}>
-                <TouchableOpacity style={styles.filterButton}>
-                    <Text style={styles.filterText}>category</Text>
+                <TouchableOpacity style={styles.filterButton} onPress={() => setSelectedTag('food')}>
+                    <Text style={styles.filterText}>Food</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.filterButton}>
-                    <Text style={styles.filterText}>rating</Text>
+                <TouchableOpacity style={styles.filterButton} onPress={() => setSelectedTag('drinks')}>
+                    <Text style={styles.filterText}>Drinks</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.filterButton}>
-                    <Text style={styles.filterText}>reset</Text>
+                <TouchableOpacity
+                    ref={ratingButtonRef}
+                    style={styles.filterButton}
+                    onPress={() => {
+                        ratingButtonRef.current.measure((fx, fy, width, height, px, py) => {
+                            setRatingButtonPosition({ x: px, y: py + height });
+                            setShowRatingOptions(!showRatingOptions);
+                        });
+                    }}
+                >
+                    <Text style={styles.filterText}>Rating</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.filterButton} onPress={() => {
+                    setSelectedTag(null);
+                    setSelectedRating(null);
+                    setSearchText('');
+                }}>
+                    <Text style={styles.filterText}>Reset</Text>
                 </TouchableOpacity>
             </View>
 
+            {showRatingOptions && (
+                <View style={[styles.ratingOptions, { top: ratingButtonPosition.y, left: ratingButtonPosition.x }]}>
+                    {[5, 4.5, 4, 3.5, 3].map(rating => (
+                        <TouchableOpacity
+                            key={rating}
+                            onPress={() => {
+                                setSelectedRating(rating);
+                                setShowRatingOptions(false);
+                            }}
+                        >
+                            <Text style={{ padding: 8, fontSize: 16 }}>{rating} ★</Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            )}
+
             <FlatList
-                data={data}
+                data={filteredData}
                 keyExtractor={item => item.id}
                 renderItem={({ item }) => (
-                    <View style={styles.card}>
+                    <TouchableOpacity style={styles.card}>
                         <Image
-                            source={item.image}
+                            source={{ uri: item.image }}
                             style={styles.cardImage}
                             resizeMode="cover"
                         />
+
                         <View style={styles.cardContent}>
                             <View style={styles.cardHeader}>
-                                <Text style={styles.cardTitle}>
-                                    {item.name}
-                                </Text>
-                                <Text style={styles.cardRating}>
-                                    {item.rating}
-                                </Text>
+                                <Text style={styles.cardTitle}>{item.name}</Text>
+                                <Text style={styles.cardRating}>{item.rating} ★</Text>
                             </View>
-                            <Text style={styles.cardDescription}>
-                                {item.description}
-                            </Text>
+                            <Text style={styles.cardDescription}>{item.description}</Text>
                             <View style={styles.tagsContainer}>
                                 {item.tags.map((tag, index) => (
                                     <View key={index} style={styles.tag}>
-                                        <Text style={styles.tagText}>
-                                            {tag}
-                                        </Text>
+                                        <Text style={styles.tagText}>{tag}</Text>
                                     </View>
                                 ))}
                             </View>
                         </View>
-                    </View>
+                    </TouchableOpacity>
                 )}
                 contentContainerStyle={styles.listContent}
+                ListEmptyComponent={
+                    <View style={{ alignItems: 'center', marginTop: 40 }}>
+                        <Text style={{ fontSize: 16, color: '#000' }}>
+                             No matching results found
+                        </Text>
+                    </View>
+                }
             />
         </View>
     );
@@ -125,20 +170,18 @@ const Restaurants = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#fff', 
         padding: 16
     },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
+        alignItems: 'center', 
         marginBottom: 20
     },
-    welcomeText: {
-        fontSize: 18,
-        color: '#333',
-        fontStyle: font
-    },
+    welcomeText: { 
+        fontSize: 18, 
+        color: '#333' },
     appName: {
         fontSize: 20,
         fontWeight: 'bold',
@@ -155,34 +198,56 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         fontSize: 16
     },
-    cardImage: {
-        width: '100%',
-        height: 140 // Matching the design height
-    },
     filterContainer: {
         flexDirection: 'row',
-        marginBottom: 16
+        marginBottom: 16, 
+        flexWrap: 'wrap'
     },
     filterButton: {
         marginRight: 12,
         paddingVertical: 6,
         paddingHorizontal: 12,
         backgroundColor: '#f0f0f0',
-        borderRadius: 16
+        borderRadius: 16, 
+        marginBottom: 8
     },
-    filterText: {
-        color: '#CC4C4C',
-        fontSize: 14
+    filterText: { 
+        color: '#CC4C4C', 
+        fontSize: 14 
     },
-    listContent: {
-        paddingBottom: 20
+    ratingOptions: {
+        position: 'absolute',
+        backgroundColor: '#fff',
+        padding: 10,
+        borderRadius: 8,
+        elevation: 5,
+        zIndex: 999,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+    },
+    listContent: { 
+        paddingBottom: 20  
     },
     card: {
         backgroundColor: '#f9f9f9',
         borderRadius: 8,
-        padding: 16,
-        marginBottom: 12
-    },
+        padding: 12,
+        marginBottom: 12,
+        flexDirection: 'row', 
+        alignItems: 'center',
+    },    
+    cardImage: {
+        width: 80,
+        height: 80,
+        borderRadius: 8,
+        marginRight: 12,
+    },    
+    cardContent: {
+        flex: 1,
+        justifyContent: 'center',
+    },    
     cardHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -194,11 +259,11 @@ const styles = StyleSheet.create({
     },
     cardRating: {
         fontSize: 16,
-        color: '#FFA500' // Orange color for stars
+        color: '#FFA500'
     },
     cardDescription: {
         fontSize: 14,
-        color: '#666',
+        color: '#666', 
         marginBottom: 12
     },
     tagsContainer: {
@@ -208,15 +273,15 @@ const styles = StyleSheet.create({
     tag: {
         backgroundColor: '#FF6969',
         borderRadius: 12,
-        paddingVertical: 4,
+        paddingVertical: 4, 
         paddingHorizontal: 10,
-        marginRight: 8,
+        marginRight: 8, 
         marginBottom: 8
     },
     tagText: {
-        fontSize: 12,
+        fontSize: 12, 
         color: 'black'
-    }
+    },
 });
 
 export default Restaurants;
