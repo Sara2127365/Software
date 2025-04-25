@@ -4,7 +4,7 @@ import { View, Text, StyleSheet, FlatList, useWindowDimensions } from 'react-nat
 const teamData = [
     { id: '1', name: 'Uosry', role: 'Team Member', bio: 'Uosry is responsible for leading the team, ensuring smooth collaboration, and making key decisions.' },
     { id: '2', name: 'Lekaa', role: 'Team Member', bio: 'Lekaa is a skilled developer who focuses on front-end development and user experience.' },
-    { id: '3', name: 'kareem', role: 'Team Member', bio: 'kareem is specializes in back-end development, focusing on API integration and server-side logic.' },
+    { id: '3', name: 'kareem', role: 'Team Member', bio: 'kareem is teem member 🙂👍.' },
     { id: '4', name: 'Mo3tasem', role: 'Team Member', bio: 'Mo3tasem excels in back-end development, optimizing database performance and scalability.' },
     { id: '5', name: 'Yasmen', role: 'Team Member', bio: 'Yasmen is a back-end developer with expertise in cloud infrastructure and deployment.' },
     { id: '6', name: 'Sara', role: 'Team Member', bio: 'Sara focuses on back-end security, ensuring the app is robust and protected.' },
