@@ -1,262 +1,314 @@
 import React, { useState } from 'react';
+import {
+  View, Text, TextInput, TouchableOpacity, Modal, FlatList, StyleSheet,
+  ScrollView, Image
+} from 'react-native';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Feather from '@expo/vector-icons/Feather';
-import LargeBtn from '../../../../common/LargeBtn';
-import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    Modal,
-    SafeAreaView,
-    FlatList,
-    StyleSheet,
-    ScrollView,
-    Pressable,
-    Image
-
-} from 'react-native';
-import MultiSelect2 from '../../../../components/mini components/MultiSelect2';
-
-import * as DocumentPicker from 'expo-document-picker';
+import FontAwesome from "react-native-vector-icons/FontAwesome";
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import { signUp } from '../../../../utils/firebase/auth';
-import { createUserAccount } from '../../../../utils/backend helpers/authCalls';
-import Input from '../../../../common/Input';
-import {
-    checkIcon,
-    emailIcon,
-    informationIcon,
-    passwordIcon,
-    personIcon,
-    phoneIcon,
-    chevronDownIcon
-    
-} from '../../../../constants/icons';
+import * as DocumentPicker from 'expo-document-picker';
 
 const faculties = [
-    'Faculty of Engineering',
-    'Faculty of Medicine',
-    'Faculty of Arts',
-    'Faculty of Science',
-    'Faculty of Business'
+  'Faculty of Engineering',
+  'Faculty of Medicine',
+  'Faculty of Arts',
+  'Faculty of Science',
+  'Faculty of Business',
 ];
 
 const states = ['Student', 'Worker'];
 
-const SignUp=()=> {
-    const router = useRouter();
-    const [facultyModalVisible, setFacultyModalVisible] = useState(false);
-    const [stateModalVisible, setStateModalVisible] = useState(false);
+export default function SignUp() {
+  const router = useRouter();
 
-    const [selectedFaculty, setSelectedFaculty] = useState(null);
-    const [selectedState, setSelectedState] = useState(null);
-const [isMultiSelectOpen, setIsMultiSelectOpen] = useState(false);
-    const [file, setFile] = useState(null);
-    const [formData, setFormData] = useState({
-        logo: null,
-        cover: null,
-        name: '',
-        email: '',
-        faculty: '',
-        password: '',
-        phoneNumber: '',
-        type: ''
-    });
+  const [facultyModalVisible, setFacultyModalVisible] = useState(false);
+  const [stateModalVisible, setStateModalVisible] = useState(false);
 
-    console.log(`selectedFaculty`, selectedFaculty);
-    console.log(`selectedState`, selectedState);
-    console.log(`formData`, formData);
+  const [selectedFaculty, setSelectedFaculty] = useState(null);
+  const [selectedState, setSelectedState] = useState(null);
 
-    
+  const [formData, setFormData] = useState({
+    fullname: '',
+    email: '',
+    phone: '',
+    password: '',
+    logo: null,
+  });
 
-    const handleSelectFaculty = faculty => {
-        setSelectedFaculty(faculty);
-        setFormData(old => ({ ...old, faculty }));
-        setFacultyModalVisible(false);
-    };
+  const handleSelectFaculty = (faculty) => {
+    setSelectedFaculty(faculty);
+    setFacultyModalVisible(false);
+  };
 
-    const handleSelectState = state => {
-        setSelectedState(state);
-        setFormData(old => ({ ...old, type: state }));
-        setStateModalVisible(false);
-    };
+  const handleSelectState = (state) => {
+    setSelectedState(state);
+    setStateModalVisible(false);
+  };
 
-    // async function handleSubmit() {
-    //     const result = await signUp({ ...formData, table: 'users' });
-    //     console.log(result);
-    // }
-
-    async function handleSubmit() {
-        const result = await createUserAccount({ ...formData, table: 'users' });
-        if (result) {
-            router.replace('/LoginPage');
-        }
+  const pickFile = async (id) => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'image/*'
+      });
+      if (result.assets && result.assets.length > 0) {
+        const file = result.assets[0];
+        setFormData(prev => ({ ...prev, [id]: file }));
+      }
+    } catch (err) {
+      console.error('Error picking file:', err);
     }
+  };
 
-    function handleChange(value, id) {
-        setFormData(old => ({ ...old, [id]: value }));
-    }
-     const pickFile = async id => {
-            try {
-                const result = await DocumentPicker.getDocumentAsync({
-                    type: 'image/*'
-                });
-                if (result.type === 'success' || !result.canceled) {
-                    console.log('Picked file:', result.assets[0]);
-                    setFile(result.assets[0]);
-                    setFormData(old => ({ ...old, [id]: result.assets[0] }));
-                } else if (result.canceled) {
-                    console.log('User canceled the picker');
-                } else {
-                    console.log('result', result);
-                }
-            } catch (err) {
-                console.error('ERROR : ', err);
-            }
-        };
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <AntDesign
+          onPress={() => router.back()}
+          name="arrowleft"
+          size={24}
+          color="#CC4C4C"
+        />
+        <Text style={styles.headerTitle}>Create user account</Text>
+        <View style={{ width: 24 }} />
+      </View>
 
-    return (
-        <SafeAreaView className="flex-1 py-5 bg-main-white">
-            <View className="flex flex-row px-3 mt-5 items-center justify-between">
-                <AntDesign
-                    onPress={() => router.back()}
-                    name="arrowleft"
-                    size={24}
-                    color="#CC4C4C"
-                />
-                <Text className=" text-main-gray text-xl font-montserrat-r ">
-                    Create User account
-                </Text>
-                <Text className=" "></Text>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 20 }}>
+        {/* User Image */}
+        <View style={styles.avatarContainer}>
+          <View style={styles.avatarCircle}>
+            {formData.logo ? (
+              <Image
+                source={{ uri: formData.logo.uri }}
+                style={styles.avatarImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <FontAwesome name="user" size={48} color="white" />
+            )}
+            <TouchableOpacity
+              onPress={() => pickFile('logo')}
+              style={styles.cameraIcon}
+            >
+              <Feather name="camera" size={18} color="white" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Input Fields */}
+        <View style={styles.all}>
+        <View style={styles.inputContainer}>
+          <FontAwesome name="user" size={20} color="#9A9A9A" />
+          <TextInput
+            style={styles.input}
+            placeholder="Full name"
+            value={formData.fullname}
+            onChangeText={(text) => setFormData(prev => ({ ...prev, fullname: text }))}
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <FontAwesome name="envelope" size={20} color="#9A9A9A" />
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            value={formData.email}
+            onChangeText={(text) => setFormData(prev => ({ ...prev, email: text }))}
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <FontAwesome name="phone" size={20} color="#9A9A9A" />
+          <TextInput
+            style={styles.input}
+            placeholder="Phone number"
+            value={formData.phone}
+            onChangeText={(text) => setFormData(prev => ({ ...prev, phone: text }))}
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <FontAwesome name="university" size={20} color="#9A9A9A" />
+          <TouchableOpacity style={styles.input} onPress={() => setFacultyModalVisible(true)}>
+            <Text style={styles.dropdownText}>{selectedFaculty || 'Faculty'}</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Faculty Modal */}
+        <Modal visible={facultyModalVisible} transparent animationType="fade">
+          <TouchableOpacity style={styles.modalOverlay} onPressOut={() => setFacultyModalVisible(false)}>
+            <View style={styles.modalContent}>
+              <FlatList
+                data={faculties}
+                keyExtractor={(item) => item}
+                renderItem={({ item }) => (
+                  <TouchableOpacity style={styles.option} onPress={() => handleSelectFaculty(item)}>
+                    <Text style={styles.optionText}>{item}</Text>
+                  </TouchableOpacity>
+                )}
+              />
             </View>
-            <ScrollView className="px-3">
-                <Pressable
-                    onPress={() => {
-                        setIsMultiSelectOpen(false);
-                    }}
-                >
-                    <View>
-                        <View className="imgs-container mb-20 relative px-5 mt-5">
-                            <View className="cover bg-main-rose w-full h-32 rounded-xl">
-                                {formData?.cover && (
-                                    <Image
-                                        source={{ uri: formData.cover.uri }}
-                                        className="w-full absolute rounded-xl object-center h-full"
-                                        resizeMode="cover"
-                                    />
-                                )}
-                                <TouchableOpacity
-                                    onPress={() => pickFile('cover')}
-                                    className="size-14 absolute -right-5 -bottom-5 rounded-full flex items-center justify-center bg-main-rose border-4 border-white"
-                                >
-                                    <Feather
-                                        name="camera"
-                                        size={24}
-                                        color="white"
-                                    />
-                                </TouchableOpacity>
-                            </View>
-                            <View className="absolute w-full top-4 left-5 flex  flex-row justify-center">
-                                <View className="main-image flex items-center justify-center relative size-40 rounded-full bg-main-rose-light">
-                                    {formData?.logo && (
-                                        <Image
-                                            source={{ uri: formData.logo.uri }}
-                                            className="w-full absolute top-0 left-0 rounded-full object-center h-full"
-                                            resizeMode="cover"
-                                        />
-                                    )}
-                                    <TouchableOpacity
-                                        onPress={() => pickFile('logo')}
-                                        className="size-14 absolute -right-1 -bottom-1 rounded-full flex items-center justify-center bg-main-rose-light border-4 border-white"
-                                    >
-                                        <Feather
-                                            name="camera"
-                                            size={24}
-                                            color="white"
-                                        />
-                                    </TouchableOpacity>
-                                    <FontAwesome
-                                        name="user"
-                                        size={48}
-                                        color="white"
-                                    />
-                                </View>
-                            </View>
-                        </View>
-                    </View>
+          </TouchableOpacity>
+        </Modal>
 
-                    {/* INPUTS */}
-                    <View className="flex flex-col gap-4 ">
-                        <Input
-                            value={formData.name}
-                            onChange={value =>
-                                handleChange(value, 'name')
-                            }
-                            placeholder="Full name"
-                            icon={personIcon()}
-                        />
-                        <Input
-                            type="email"
-                            value={formData.email}
-                            onChange={value => handleChange(value, 'email')}
-                            placeholder="email"
-                            icon={emailIcon()}
-                        />
-                        <Input
-                            type="phone"
-                            value={formData.phoneNumber}
-                            onChange={value =>
-                                handleChange(value, 'phoneNumber')
-                            }
-                            placeholder="phone number"
-                            icon={phoneIcon()}
-                        />
-                       
-                       <Input
-                            type="states"
-                            value={formData.type}
-                            onChange={value =>
-                                handleChange(value, 'type')
-                            }
-                            placeholder="You are"
-                            icon={chevronDownIcon}
-                            
-                        />
+        <View style={styles.inputContainer}>
+          <FontAwesome name="user-circle" size={20} color="#9A9A9A" />
+          <TouchableOpacity style={styles.input} onPress={() => setStateModalVisible(true)}>
+            <Text style={styles.dropdownText}>{selectedState || 'You are'}</Text>
+          </TouchableOpacity>
+        </View>
 
-                      
-                       
-                      
-                        <MultiSelect2
-                            setIsMultiSelectOpen={setIsMultiSelectOpen}
-                            isMultiSelectOpen={isMultiSelectOpen}
-                            title="Faculty"
-                        />
+        {/* State Modal */}
+        <Modal visible={stateModalVisible} transparent animationType="fade">
+          <TouchableOpacity style={styles.modalOverlay} onPressOut={() => setStateModalVisible(false)}>
+            <View style={styles.modalContent}>
+              <FlatList
+                data={states}
+                keyExtractor={(item) => item}
+                renderItem={({ item }) => (
+                  <TouchableOpacity style={styles.option} onPress={() => handleSelectState(item)}>
+                    <Text style={styles.optionText}>{item}</Text>
+                  </TouchableOpacity>
+                )}
+              />
+            </View>
+          </TouchableOpacity>
+        </Modal>
 
-                        
-                         
+        <View style={styles.inputContainer}>
+          <FontAwesome name="lock" size={20} color="#9A9A9A" />
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            secureTextEntry
+            value={formData.password}
+            onChangeText={(text) => setFormData(prev => ({ ...prev, password: text }))}
+          />
+        </View>
+        </View>
 
-                        <Input
-                            value={formData.password}
-                            onChange={value => handleChange(value, 'password')}
-                            type="password"
-                            placeholder="password"
-                            icon={passwordIcon()}
-                        />
-                    </View>
-                    <LargeBtn
-                        onPress={handleSubmit}
-                        text="Register"
-                        classes="py-4 mt-10 w-full bg-main-rose rounded-xl"
-                        textClasses="text-lg"
-                    />
-                </Pressable>
-            </ScrollView>
-        </SafeAreaView>
-    );
-};
+        {/* Register Button */}
+        <TouchableOpacity style={styles.registerButton}>
+          <Text style={styles.registerText}>Register</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
 
-export default   SignUp;
-
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'rgba(242,242,242,1)',
+    paddingTop: 10,
+    marginBottom:20
+  },
+  all:{
+    paddingTop:10,
+    borderRadius:12,
+    marginBottom:20,
+    backgroundColor:'#fff',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  headerTitle: {
+    fontSize: 18,
+    color: '#3F3F3F',
+    fontWeight: '500',
+  },
+  avatarContainer: {
+    alignItems: 'center',
+    marginBottom: 25,
+  },
+  avatarCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#FFBABA',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative'
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 50,
+    position: 'absolute'
+  },
+  cameraIcon: {
+    position: 'absolute',
+    bottom: -5,
+    right: -5,
+    backgroundColor: '#FF6969',
+    borderRadius: 20,
+    padding: 6,
+    borderWidth: 2,
+    borderColor: 'white'
+  },
+  inputContainer: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
     
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginBottom: 15,
+    marginLeft:10,
+    marginRight:10,
+    paddingHorizontal:12,
+    borderWidth: 1,
+    borderColor: '#ddd', // حدود خفيفة زي الصورة
+    paddingHorizontal: 12,
+    height: 50,
+    
+  },
+  input: {
+    flex: 1,
+    marginLeft: 8,
+    color: '#333',
+    fontSize:16,
+    textAlign:'left'
+  },
+  dropdownText: {
+    color: '#999',
+    fontSize: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  modalContent: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 15,
+  },
+  option: {
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  optionText: {
+    fontSize: 16,
+    color: '#333'
+  },
+  registerButton: {
+    backgroundColor: '#FF6969',
+    borderRadius: 15,
+    paddingVertical: 15,
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 40
+  },
+  registerText: {
+    color: 'rgba(43,43,37,1)',
+    fontSize: 18,
+    fontWeight: 'bold'
+  }
+});
