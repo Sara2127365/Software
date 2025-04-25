@@ -1,13 +1,14 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, FlatList, useWindowDimensions, SafeAreaView } from 'react-native';
 
 const teamData = [
     { id: '1', name: 'Uosry', role: 'Team Member', bio: 'Uosry is responsible for leading the team, ensuring smooth collaboration, and making key decisions.' },
     { id: '2', name: 'Lekaa', role: 'Team Member', bio: 'Lekaa is a skilled developer who focuses on front-end development and user experience.' },
     { id: '3', name: 'kareem', role: 'Team Member', bio: 'kareem is teem member 🙂👍.' },
     { id: '4', name: 'Mo3tasem', role: 'Team Member', bio: 'Mo3tasem excels in back-end development, optimizing database performance and scalability.' },
-    { id: '5', name: 'Yasmen', role: 'Team Member', bio: 'Yasmen is a back-end developer with expertise in cloud infrastructure and deployment.' },
-    { id: '6', name: 'Sara', role: 'Team Member', bio: 'Sara focuses on back-end security, ensuring the app is robust and protected.' },
+    { id: '5', name: 'Sara', role: 'Team Member', bio: 'Sara focuses on back-end security, ensuring the app is robust and protected.' },
+    { id: '6', name: 'Yasmen', role: 'Team Member', bio: 'Yasmen is a back-end developer with expertise in cloud infrastructure and deployment.' },
+   
 ];
 
 const About = () => {
@@ -94,17 +95,26 @@ const About = () => {
     };
 
     return (
+        <SafeAreaView style={styles.safeArea}>
         <FlatList
             data={sections}
             renderItem={renderItem}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={[styles.container, { padding: width * 0.05 }]}
+            contentContainerStyle={[styles.container, { padding: width * 0.05, paddingBottom: 50 }]} // Added paddingBottom
             showsVerticalScrollIndicator={true}
+            style={styles.flatList} 
         />
+    </SafeAreaView>
     );
 };
 
 const styles = StyleSheet.create({
+    safeArea: {
+        flex: 1,
+    },
+    flatList: {
+        flex: 1, 
+    },
     container: {
         flexGrow: 1,
     },
