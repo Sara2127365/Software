@@ -131,27 +131,6 @@ const _layout = () => {
                     )
                 }}
             />
-
-            <Tabs.Screen
-                name="exam"
-                options={{
-                    title: 'Exam',
-                    headerShown: false,
-                    tabBarIcon: ({ focused }) => (
-                        <TabIcon
-                            focused={focused}
-                            Icon={
-                                <Icon
-                                    name="book"
-                                    size={17}
-                                    color={focused ? '#CC4C4C' : '#FF6969'}
-                                />
-                            }
-                            title="Exam"
-                        />
-                    )
-                }}
-            />
         </Tabs>
     );
 };
