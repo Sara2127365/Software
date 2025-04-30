@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, useWindowDimensions, SafeAreaView } from 'react-native';
 
@@ -5,108 +6,97 @@ const privacyPolicyData = [
   {
     id: 'header',
     type: 'header',
-    title: 'Privacy Policy',
-  },
-  {
-    id: 'effectiveDate',
-    type: 'description',
-    text: 'Effective Date: April 30, 2025',
+    title: 'Privacy Policy 🍔',
   },
   {
     id: 'intro',
     type: 'description',
     text:
-      'Welcome to Toomia, your go-to food delivery app for university students. At Toomia, we value your privacy and are committed to protecting your personal information. This Privacy Policy explains how we collect, use, share, and safeguard your data when you use our app. By using Toomia, you agree to the terms outlined below.',
+      'Hey there! Welcome to Toomia, the app that gets you food from campus restaurants fast. We care about your privacy, so here’s the deal on how we handle your info. Using Toomia means you’re cool with this!',
   },
   {
     id: 'collectTitle',
     type: 'sectionTitle',
-    title: '1. Information We Collect',
+    title: 'What We Collect 📋',
   },
   {
     id: 'collectDescription',
     type: 'description',
     text:
-      'We collect information to provide and improve our services. This includes:',
+      'To make Toomia work, we grab some info like:',
   },
   {
-    id: 'collectProvided',
+    id: 'collectItems',
     type: 'listItem',
     text:
-      '• Account Information: When you sign up, we may collect your name, email address, phone number, and university affiliation.',
+      '• Your name, email, and phone number when you sign up.',
   },
   {
     id: 'collectOrder',
     type: 'listItem',
     text:
-      '• Order Information: When you place an order, we collect details like items ordered, delivery address (e.g., campus location), and payment information.',
+      '• Stuff like what you ordered and where to deliver it (like your dorm or library spot).',
   },
   {
     id: 'collectLocation',
     type: 'listItem',
     text:
-      '• Location Data: With your permission, we collect your device’s location to suggest nearby restaurants or facilitate delivery.',
-  },
-  {
-    id: 'collectUsage',
-    type: 'listItem',
-    text:
-      '• Usage Data: We collect information about how you use the app, such as pages visited and features used.',
+      '• Your location (only if you say it’s okay) to find restaurants near you.',
   },
   {
     id: 'useTitle',
     type: 'sectionTitle',
-    title: '2. How We Use Your Information',
+    title: 'What We Do With It 🛠️',
   },
   {
     id: 'useDescription',
     type: 'description',
     text:
-      'We use your information to: process and fulfill your orders, provide personalized restaurant recommendations, improve the app’s functionality, and communicate with you about orders or promotions (you can opt out of marketing emails).',
+      'We use your info to get your food to you, suggest cool restaurants, and make the app better. We might also send you deals (but you can tell us to stop).',
   },
   {
     id: 'shareTitle',
     type: 'sectionTitle',
-    title: '3. How We Share Your Information',
+    title: 'Who We Share It With 🤝',
   },
   {
     id: 'shareDescription',
     type: 'description',
     text:
-      'We do not sell your personal information. We may share your data with restaurants to process orders, delivery partners for order fulfillment, or trusted service providers (e.g., payment processors) who help us operate the app. We may also share data if required by law.',
+      'We don’t sell your info, promise! We only share it with restaurants to make your order happen or with delivery guys to get your food to you. We might have to share it if the law asks us to.',
   },
   {
     id: 'protectTitle',
     type: 'sectionTitle',
-    title: '4. How We Protect Your Information',
+    title: 'How We Keep It Safe 🔒',
   },
   {
     id: 'protectDescription',
     type: 'description',
     text:
-      'We use encryption, secure authentication, and other measures to protect your data. However, no internet-based service is 100% secure, and we cannot guarantee absolute security.',
+      'We lock your info up tight with cool tech stuff like encryption. But, you know, nothing online is 100% hacker-proof.',
   },
   {
-    id: 'rightsTitle',
+    id: 'yourRightsTitle',
     type: 'sectionTitle',
-    title: '5. Your Choices and Rights',
+    title: 'Your Choices ✌️',
   },
   {
-    id: 'rightsDescription',
+    id: 'yourRightsDescription',
     type: 'description',
     text:
-      'You can update your account information, disable location sharing, opt out of promotional emails, or request account deletion by contacting us at support@toomia.com.',
+      'Wanna change your info or stop sharing your location? You can do that in the app. If you want to delete your account, just hit us up at support@toomia.com.',
   },
   {
     id: 'contactTitle',
     type: 'sectionTitle',
-    title: '6. Contact Us',
+    title: 'Got Questions? 📩',
   },
   {
     id: 'contactDescription',
     type: 'description',
     text:
-      'If you have questions about this Privacy Policy, please reach out to us at support@toomia.com.',
+      'If you’re curious about anything, shoot us an email at support@toomia.com, and we’ll sort you out!',
   },
 ];
 
