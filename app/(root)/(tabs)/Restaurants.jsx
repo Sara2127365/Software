@@ -12,7 +12,7 @@ import {
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../utils/firebase/config';
 import { useRouter } from 'expo-router';
-import { addToCart } from '../../../utils/addToCart';
+
 
 const Restaurants = () => {
     const [restaurants, setRestaurants] = useState([]);
@@ -152,12 +152,7 @@ const Restaurants = () => {
                                     </View>
                                 ))}
                             </View>
-                            <TouchableOpacity
-                                style={styles.addButton}
-                                onPress={() => addToCart(item)}
-                            >
-                                <Text style={styles.addButtonText}>Add to Cart</Text>
-                            </TouchableOpacity>
+                            
                         </View>
                     </View>
                 )}
@@ -266,16 +261,7 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: 'black'
     },
-    addButton: {
-        backgroundColor: '#FF6969',
-        paddingVertical: 6,
-        borderRadius: 6,
-        alignItems: 'center',
-    },
-    addButtonText: {
-        color: '#fff',
-        fontWeight: 'bold',
-    },
+    
 });
 
 export default Restaurants;
