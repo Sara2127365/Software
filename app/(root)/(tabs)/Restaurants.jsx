@@ -8,9 +8,11 @@ import {
     TouchableOpacity,
     Image
 } from 'react-native';
+
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../utils/firebase/config';
 import { useRouter } from 'expo-router';
+import { addToCart } from '../../../utils/addToCart';
 
 const Restaurants = () => {
     const [restaurants, setRestaurants] = useState([]);
@@ -131,13 +133,12 @@ const Restaurants = () => {
                 data={filteredData}
                 keyExtractor={item => item.id}
                 renderItem={({ item }) => (
-                    <TouchableOpacity style={styles.card}>
+                    <View style={styles.card}>
                         <Image
                             source={{ uri: item.image }}
                             style={styles.cardImage}
                             resizeMode="cover"
                         />
-
                         <View style={styles.cardContent}>
                             <View style={styles.cardHeader}>
                                 <Text style={styles.cardTitle}>{item.name}</Text>
@@ -151,8 +152,14 @@ const Restaurants = () => {
                                     </View>
                                 ))}
                             </View>
+                            <TouchableOpacity
+                                style={styles.addButton}
+                                onPress={() => addToCart(item)}
+                            >
+                                <Text style={styles.addButtonText}>Add to Cart</Text>
+                            </TouchableOpacity>
                         </View>
-                    </TouchableOpacity>
+                    </View>
                 )}
                 contentContainerStyle={styles.listContent}
                 ListEmptyComponent={
@@ -168,28 +175,16 @@ const Restaurants = () => {
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff', 
-        padding: 16
-    },
+    container: { flex: 1, backgroundColor: '#fff', padding: 16 },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center', 
+        alignItems: 'center',
         marginBottom: 20
     },
-    welcomeText: { 
-        fontSize: 18, 
-        color: '#333' },
-    appName: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#CC4C4C'
-    },
-    searchContainer: {
-        marginBottom: 16
-    },
+    welcomeText: { fontSize: 18, color: '#333' },
+    appName: { fontSize: 20, fontWeight: 'bold', color: '#CC4C4C' },
+    searchContainer: { marginBottom: 16 },
     searchInput: {
         height: 40,
         borderWidth: 1,
@@ -200,7 +195,7 @@ const styles = StyleSheet.create({
     },
     filterContainer: {
         flexDirection: 'row',
-        marginBottom: 16, 
+        marginBottom: 16,
         flexWrap: 'wrap'
     },
     filterButton: {
@@ -208,13 +203,10 @@ const styles = StyleSheet.create({
         paddingVertical: 6,
         paddingHorizontal: 12,
         backgroundColor: '#f0f0f0',
-        borderRadius: 16, 
+        borderRadius: 16,
         marginBottom: 8
     },
-    filterText: { 
-        color: '#CC4C4C', 
-        fontSize: 14 
-    },
+    filterText: { color: '#CC4C4C', fontSize: 14 },
     ratingOptions: {
         position: 'absolute',
         backgroundColor: '#fff',
@@ -227,43 +219,35 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.2,
         shadowRadius: 4,
     },
-    listContent: { 
-        paddingBottom: 20  
-    },
+    listContent: { paddingBottom: 20 },
     card: {
         backgroundColor: '#f9f9f9',
         borderRadius: 8,
         padding: 12,
         marginBottom: 12,
-        flexDirection: 'row', 
+        flexDirection: 'row',
         alignItems: 'center',
-    },    
+    },
     cardImage: {
         width: 80,
         height: 80,
         borderRadius: 8,
         marginRight: 12,
-    },    
+    },
     cardContent: {
         flex: 1,
         justifyContent: 'center',
-    },    
+    },
     cardHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginBottom: 8
     },
-    cardTitle: {
-        fontSize: 16,
-        fontWeight: 'bold'
-    },
-    cardRating: {
-        fontSize: 16,
-        color: '#FFA500'
-    },
+    cardTitle: { fontSize: 16, fontWeight: 'bold' },
+    cardRating: { fontSize: 16, color: '#FFA500' },
     cardDescription: {
         fontSize: 14,
-        color: '#666', 
+        color: '#666',
         marginBottom: 12
     },
     tagsContainer: {
@@ -273,14 +257,24 @@ const styles = StyleSheet.create({
     tag: {
         backgroundColor: '#FF6969',
         borderRadius: 12,
-        paddingVertical: 4, 
+        paddingVertical: 4,
         paddingHorizontal: 10,
-        marginRight: 8, 
+        marginRight: 8,
         marginBottom: 8
     },
     tagText: {
-        fontSize: 12, 
+        fontSize: 12,
         color: 'black'
+    },
+    addButton: {
+        backgroundColor: '#FF6969',
+        paddingVertical: 6,
+        borderRadius: 6,
+        alignItems: 'center',
+    },
+    addButtonText: {
+        color: '#fff',
+        fontWeight: 'bold',
     },
 });
 
