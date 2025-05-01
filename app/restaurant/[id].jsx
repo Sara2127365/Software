@@ -95,27 +95,27 @@ const RestaurantDetails = () => {
             <View style={styles.topBar}>
                 <Text style={styles.welcomeText}>Welcome , User</Text>
                 <TouchableOpacity style={styles.cartIconContainer} onPress={() => router.push('(tabs)/Cart')}>
-    <Text style={styles.cartIcon}>🛍️</Text>
-    {totalItems > 0 && (
-        <View style={styles.cartBadge}>
-            <Text style={styles.cartBadgeText}>{totalItems}</Text>
-        </View>
-    )}
-</TouchableOpacity>
+                    <Text style={styles.cartIcon}>🛍️</Text>
+                    {totalItems > 0 && (
+                        <View style={styles.cartBadge}>
+                            <Text style={styles.cartBadgeText}>{totalItems}</Text>
+                        </View>
+                    )}
+                </TouchableOpacity>
+
+
 
 
             </View>
 
-            {/* Back + Restaurant Name */}
             <View style={styles.subHeader}>
                 <TouchableOpacity onPress={() => router.back()}>
                     <Text style={styles.backArrow}>{'←'}</Text>
                 </TouchableOpacity>
                 <Text style={styles.pageTitle}>{restaurant.name}</Text>
-                <View style={{ width: 24 }} /> {/* مكان فاضي لعمل توازن */}
+                <View style={{ width: 24 }} />
             </View>
 
-            {/* Cover and Logo */}
             <View style={styles.coverContainer}>
                 <View style={styles.cover}>
                     <Image
@@ -141,7 +141,6 @@ const RestaurantDetails = () => {
             </View>
 
 
-            {/* Categories */}
             <View style={styles.categoriesContainer}>
                 {categories.map((cat) => (
                     <TouchableOpacity
@@ -157,7 +156,6 @@ const RestaurantDetails = () => {
                 ))}
             </View>
 
-            {/* Products */}
             <FlatList
                 data={filteredProducts}
                 keyExtractor={(item) => item.id}
@@ -170,7 +168,6 @@ const RestaurantDetails = () => {
                     return (
                         <View style={styles.productCard}>
                             {isFlipped ? (
-                                // 👈 الوجه الخلفي (العداد)
                                 <View style={styles.backCard}>
                                     <Text style={styles.productName}>{item.name}</Text>
                                     <View style={styles.counterContainer}>
@@ -187,13 +184,11 @@ const RestaurantDetails = () => {
                                         </TouchableOpacity>
 
                                     </View>
-                                    {/* زرار الرجوع */}
                                     <TouchableOpacity onPress={() => toggleFlip(item.id)}>
                                         <Text style={styles.backArrow}>←</Text>
                                     </TouchableOpacity>
                                 </View>
                             ) : (
-                                // 👈 الوجه الأمامي (الصورة والبيانات)
                                 <>
                                     <View style={styles.imageWrapper}>
                                         <Image
@@ -423,4 +418,3 @@ const styles = StyleSheet.create({
 });
 
 export default RestaurantDetails;
-//عاوزة اغير شكل الصورة الاولى واخليه زي الصورة التانية
