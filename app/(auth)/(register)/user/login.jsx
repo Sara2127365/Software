@@ -3,26 +3,52 @@ import {
     Text,
     StyleSheet,
     TextInput,
-    TouchableOpacity
+    TouchableOpacity,
+    Alert,
+    Pressable
 } from 'react-native';
 import React, { useState } from 'react';
-import { ScrollView, Pressable } from 'react-native-gesture-handler';
+import { ScrollView } from 'react-native-gesture-handler';
 import { useRouter } from 'expo-router';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth'; // استيراد Firebase Authentication
 
 export default function Login() {
-    const [username, setUserName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
     const router = useRouter();
+
+    // دالة تسجيل الدخول
+    const handleLogin = async () => {
+        if (!email || !password) {
+            Alert.alert("Missing Information", "Please fill out both fields.");
+            return;
+        }
+
+        setLoading(true);
+        const auth = getAuth();
+        
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            console.log('User signed in:', user);
+            // عند نجاح الدخول، يمكنك توجيه المستخدم إلى الصفحة الرئيسية أو أي صفحة أخرى
+            router.push('/home'); // مثال: الانتقال إلى الصفحة الرئيسية
+        } catch (error) {
+            Alert.alert("Login Failed", error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <View
             style={{
                 display: 'flex',
                 flex: 1,
-                backgroundColor: ' dark white',
+                backgroundColor: '#f0f0f0',  // Use a valid color
                 paddingTop: 20,
                 padding: 15,
                 alignItems: 'center'
@@ -35,7 +61,6 @@ export default function Login() {
                         fontFamily: 'outfit-bold'
                     }}
                 >
-                    {' '}
                     Enter your Account
                 </Text>
 
@@ -46,8 +71,12 @@ export default function Login() {
                         color={'#9A9A9A'}
                         style={styles.inputIcon}
                     />
-
-                    <TextInput style={styles.textinput} placeholder=" Email" />
+                    <TextInput
+                        style={styles.textinput}
+                        placeholder="Email"
+                        value={email}
+                        onChangeText={setEmail}
+                    />
                 </View>
 
                 <View style={styles.contianericon}>
@@ -57,13 +86,13 @@ export default function Login() {
                         color={'#9A9A9A'}
                         style={styles.inputIcon}
                     />
-
                     <TextInput
                         style={styles.textinput}
-                        placeholder=" Password"
-                        secureTextEntry="hide"
+                        placeholder="Password"
+                        secureTextEntry={true}  // تأكد من ضبطه على true
+                        value={password}
+                        onChangeText={setPassword}
                     />
-                   
                 </View>
 
                 <TouchableOpacity
@@ -74,6 +103,8 @@ export default function Login() {
                         marginTop: 10,
                         borderRadius: 15
                     }}
+                    onPress={handleLogin}  // تنفيذ الدالة عند الضغط
+                    disabled={loading} // Disable the button while loading
                 >
                     <Text
                         style={{
@@ -83,7 +114,7 @@ export default function Login() {
                             textAlign: 'center'
                         }}
                     >
-                        Login
+                        {loading ? 'Logging in...' : 'Login'}
                     </Text>
                 </TouchableOpacity>
 
@@ -95,8 +126,7 @@ export default function Login() {
                                 fontFamily: 'outfit-bold'
                             }}
                         >
-                            {' '}
-                        {' '}
+                            Don't have an account? Sign Up
                         </Text>
                     </Pressable>
                 </View>
