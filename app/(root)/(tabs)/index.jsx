@@ -1,5 +1,5 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { useEffect } from 'react';
+// HomeScreen.jsx
+import React, { useEffect, useState } from 'react';
 import {
     ImageBackground,
     View,
@@ -7,62 +7,70 @@ import {
     StyleSheet,
     ScrollView,
     TouchableOpacity,
-    Image
+    Image,
+    Alert
 } from 'react-native';
-import bgImg from '../../../assets/images/foodImg.png';
 import { handleLogout } from '../../../utils/backend helpers/authCalls';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { db } from '../../../utils/firebase/config';
 import { collection, getDocs } from 'firebase/firestore';
-import { useState } from 'react';
-
+import { useCart } from '../../context/cartcontext';  // Ensure the path to CartContext is correct
 
 const HomeScreen = () => {
     const router = useRouter();
     const [topRestaurants, setTopRestaurants] = useState([]);
     const [topOffers, setTopOffers] = useState([]);
-
+    const { cartItems, addToCart, removeFromCart } = useCart();  // Access cartItems and cart methods
 
     useEffect(() => {
         async function fetchData() {
             try {
+                // Fetching data from Firestore
                 const restaurantsSnap = await getDocs(collection(db, 'restaurants'));
                 const offersSnap = await getDocs(collection(db, 'offers'));
 
+                // Mapping the fetched data to an array of objects
                 const restaurantsData = restaurantsSnap.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
                 }));
-
                 const offersData = offersSnap.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
                 }));
 
+                // Setting the state with the fetched data
                 setTopRestaurants(restaurantsData);
                 setTopOffers(offersData);
             } catch (error) {
                 console.error('Error fetching data: ', error);
+                Alert.alert('Error', 'Failed to fetch data');
             }
         }
 
         fetchData();
     }, []);
 
+    // Function for logout
     async function signout() {
-        const res = await handleLogout();
-        if (res) {
-            router.replace('/onBoarding');
+        try {
+            const res = await handleLogout();  // Ensure handleLogout works correctly
+            if (res) {
+                router.replace('/onBoarding');
+            }
+        } catch (error) {
+            console.error('Logout error: ', error);
+            Alert.alert('Error', 'Failed to log out');
         }
     }
 
     return (
-        <ScrollView className="font-montserrat-r" style={styles.container}>
+        <ScrollView style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.welcomeText}>Welcome, User</Text>
                 <TouchableOpacity onPress={signout}>
-                    <Text style={styles.appName}>log out</Text>
+                    <Text style={styles.appName}>Log out</Text>
                 </TouchableOpacity>
             </View>
 
@@ -70,39 +78,33 @@ const HomeScreen = () => {
                 colors={['#FFA0A0', '#CC4C4C']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                className="relative "
                 style={styles.heroSection}
             >
-                <View className="w-full h-full flex items-center overflow-hidden justify-end flex-row left-0 top-0 opacity-15 absolute">
+                <View style={styles.bgImageContainer}>
                     <Image
-                        source={bgImg}
+                        source={require('../../../assets/images/foodImg.png')}
                         resizeMode="contain"
-                        className="w-60"
+                        style={styles.bgImage}
                     />
                 </View>
 
-                <View className="p-5 gap-8 font-montserrat-r text-white">
-                    <Text className="text-white font-montserrat-sb text-2xl">
-                        Welcome to Toomiia!
+                <View style={styles.heroContent}>
+                    <Text style={styles.heroTitle}>Welcome to Toomiia!</Text>
+                    <Text style={styles.heroSubtitle}>
+                        Let's make food on campus easier than ever. Start ordering now!
                     </Text>
-                    <Text className="text-white text-lg font-montserrat-r">
-                        Let's make food on campus easier than ever. Start
-                        ordering now!
-                    </Text>
-                    <View className="flex flex-row justify-end">
+                    <View style={styles.exploreButtonContainer}>
                         <TouchableOpacity
                             style={styles.exploreButton}
                             onPress={() => router.push('/Restaurants')}
                         >
-                            <Text className="!font-montserrat-sb text-white">
-                                explore restaurants →
-                            </Text>
+                            <Text style={styles.exploreButtonText}>Explore Restaurants →</Text>
                         </TouchableOpacity>
-
                     </View>
                 </View>
             </LinearGradient>
 
+            {/* Top Restaurants Section */}
             <View style={styles.section}>
                 <LinearGradient
                     colors={['#FF6969', '#FFCB2D']}
@@ -110,44 +112,27 @@ const HomeScreen = () => {
                     end={{ x: 1, y: 0 }}
                     style={styles.sectionHeader}
                 >
-                    <Text className="text-lg font-montserrat-sb">
-                        Top restaurants
-                    </Text>
+                    <Text style={styles.sectionHeaderText}>Top Restaurants</Text>
                     <TouchableOpacity onPress={() => router.push('/Restaurants')}>
-                        <Text className="text-sm font-montserrat-sb">
-                            view more →
-                        </Text>
+                        <Text style={styles.viewMoreText}>View More →</Text>
                     </TouchableOpacity>
-
                 </LinearGradient>
 
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    style={styles.horizontalScroll}
-                >
-                    {topRestaurants.slice(0, 3).map(item => {
-                        return (
-                            <TouchableOpacity
-                                className="shadow border border-gray-100 p-2"
-                                key={item.id}
-                                style={styles.itemCard}
-                                onPress={() => router.push(`/restaurant/${item.id}`)}
-                            >
-                                <Image
-                                    className="rounded-lg"
-                                    source={{ uri: item.image }}
-                                    style={styles.itemImage}
-                                    resizeMode="cover"
-                                />
-                                <Text style={styles.itemName}>{item.name}</Text>
-                            </TouchableOpacity>
-                        );
-                    })}
-
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+                    {topRestaurants.slice(0, 3).map(item => (
+                        <TouchableOpacity key={item.id} style={styles.itemCard} onPress={() => addToCart(item)}>
+                            <Image
+                                source={{ uri: item.image }}
+                                style={styles.itemImage}
+                                resizeMode="cover"
+                            />
+                            <Text style={styles.itemName}>{item.name}</Text>
+                        </TouchableOpacity>
+                    ))}
                 </ScrollView>
             </View>
 
+            {/* Top Offers Section */}
             <View style={styles.section}>
                 <LinearGradient
                     colors={['#FF6969', '#FFCB2D']}
@@ -155,45 +140,30 @@ const HomeScreen = () => {
                     end={{ x: 1, y: 0 }}
                     style={styles.sectionHeader}
                 >
-                    <Text className="text-lg font-montserrat-sb">
-                        Top offers
-                    </Text>
+                    <Text style={styles.sectionHeaderText}>Top Offers</Text>
                     <TouchableOpacity onPress={() => router.push('/Offers')}>
-                        <Text className="text-sm font-montserrat-sb">
-                            view more →
-                        </Text>
+                        <Text style={styles.viewMoreText}>View More →</Text>
                     </TouchableOpacity>
-
                 </LinearGradient>
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    style={styles.horizontalScroll}
-                >
-                    {topOffers.slice(0, 3).map(item => {
-                        return (
-                            <TouchableOpacity
-                                className="shadow border border-gray-100 p-2"
-                                key={item.id}
-                                style={styles.itemCard}
-                            >
-                                <Image
-                                    className="rounded-lg"
-                                    source={{ uri: item.image }}
-                                    style={styles.itemImage}
-                                    resizeMode="cover"
-                                />
-                                <View style={styles.offerBadge}>
-                                    <Text style={styles.offerText}>{item.name}</Text>
-                                </View>
-                                <Text style={styles.itemOffer}>{item.offer}</Text>
-                            </TouchableOpacity>
-                        );
-                    })}
 
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+                    {topOffers.slice(0, 3).map(item => (
+                        <TouchableOpacity key={item.id} style={styles.itemCard} onPress={() => addToCart(item)}>
+                            <Image
+                                source={{ uri: item.image }}
+                                style={styles.itemImage}
+                                resizeMode="cover"
+                            />
+                            <View style={styles.offerBadge}>
+                                <Text style={styles.offerText}>{item.name}</Text>
+                            </View>
+                            <Text style={styles.itemOffer}>{item.offer}</Text>
+                        </TouchableOpacity>
+                    ))}
                 </ScrollView>
             </View>
 
+            {/* Advertisement Section */}
             <View style={styles.adSection}>
                 <Image
                     source={{
@@ -205,11 +175,10 @@ const HomeScreen = () => {
                 <Text style={styles.adText}>Special Student Discounts</Text>
             </View>
 
-
-
+            {/* Footer */}
             <View style={styles.footer}>
                 <TouchableOpacity style={styles.knowMoreButton} onPress={() => router.push('/About')}>
-                    <Text style={styles.knowMoreText}>know more about us</Text>
+                    <Text style={styles.knowMoreText}>Know more about us</Text>
                 </TouchableOpacity>
             </View>
         </ScrollView>
@@ -242,32 +211,44 @@ const styles = StyleSheet.create({
         margin: 16,
         borderRadius: 20
     },
-    heroTitle: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        marginBottom: 8,
-        color: '#CC4C4C'
-    },
-    heroText: {
-        fontSize: 16,
-        marginBottom: 16,
-        color: 'white',
-        fontWeight: 'bold'
-    },
-    image: {
-        flex: 1,
-        justifyContent: 'flex-end',
-        height: '100%',
+    bgImageContainer: {
         width: '100%',
-        borderRadius: 10
+        height: '100%',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        opacity: 0.15
+    },
+    bgImage: {
+        width: '60%'
+    },
+    heroContent: {
+        padding: 16,
+        gap: 8
+    },
+    heroTitle: {
+        fontSize: 24,
+        fontWeight: '600',
+        color: 'white'
+    },
+    heroSubtitle: {
+        fontSize: 16,
+        color: 'white'
+    },
+    exploreButtonContainer: {
+        marginTop: 16,
+        alignItems: 'flex-end'
     },
     exploreButton: {
-        alignSelf: 'flex-start'
+        backgroundColor: '#FF6969',
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 20
     },
     exploreButtonText: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: 'bold'
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: 'white'
     },
     section: {
         marginVertical: 16,
@@ -278,17 +259,19 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 12,
-        backgroundColor: '#CC4C4C',
+        backgroundColor: '#FF6969',
         padding: 10,
         borderRadius: 10
     },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: 'bold'
+    sectionHeaderText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#fff'
     },
-    viewMore: {
-        color: 'white',
-        fontSize: 14
+    viewMoreText: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: '#fff'
     },
     horizontalScroll: {
         paddingVertical: 8
@@ -327,46 +310,45 @@ const styles = StyleSheet.create({
         borderRadius: 12
     },
     offerText: {
-        color: 'white',
         fontSize: 12,
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        color: '#fff'
     },
     adSection: {
-        height: 160,
-        margin: 16,
-        borderRadius: 8,
-        overflow: 'hidden',
-        justifyContent: 'center',
-        alignItems: 'center'
+        marginVertical: 16,
+        padding: 16,
+        backgroundColor: '#f8f8f8',
+        borderRadius: 8
     },
     adImage: {
         width: '100%',
-        height: '100%',
-        position: 'absolute'
-    },
-    adText: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: 'white',
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        padding: 8,
+        height: 200,
         borderRadius: 8
     },
+    adText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginTop: 8,
+        textAlign: 'center',
+        color: '#333'
+    },
     footer: {
+        marginTop: 16,
         padding: 16,
-        alignItems: 'center'
+        backgroundColor: '#FF6969',
+        borderRadius: 10
     },
     knowMoreButton: {
-        paddingVertical: 12,
-        paddingHorizontal: 24,
-        borderWidth: 1,
-        borderColor: '#FF6B6B',
-        borderRadius: 24,
-        marginBottom: 80
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        backgroundColor: '#FFCB2D',
+        borderRadius: 20,
+        alignSelf: 'center'
     },
     knowMoreText: {
-        color: '#FF6B6B',
-        fontSize: 16
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#fff'
     }
 });
 

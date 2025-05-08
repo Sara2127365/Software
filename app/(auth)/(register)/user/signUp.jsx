@@ -86,34 +86,83 @@ export default function SignUp() {
           </View>
         </View>
         <View style={styles.all}>
-          <TextInput style={styles.input} placeholder="Full name" value={formData.fullname} onChangeText={(text) => setFormData(prev => ({ ...prev, fullname: text }))} />
-          <TextInput style={styles.input} placeholder="Email" value={formData.email} onChangeText={(text) => setFormData(prev => ({ ...prev, email: text }))} />
-          <TextInput style={styles.input} placeholder="Phone number" value={formData.phone} onChangeText={(text) => setFormData(prev => ({ ...prev, phone: text }))} />
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Full name"
+              value={formData.fullname}
+              onChangeText={(text) => setFormData(prev => ({ ...prev, fullname: text }))}
+            />
+            <Feather name="user" size={20} color="#D3D3D3" style={styles.iconRight} />
+          </View>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              value={formData.email}
+              onChangeText={(text) => setFormData(prev => ({ ...prev, email: text }))}
+            />
+            <Feather name="mail" size={20} color="#D3D3D3" style={styles.iconRight} />
+          </View>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Phone number"
+              value={formData.phone}
+              onChangeText={(text) => setFormData(prev => ({ ...prev, phone: text }))}
+            />
+            <Feather name="phone" size={20} color="#D3D3D3" style={styles.iconRight} />
+          </View>
           <TouchableOpacity style={styles.input} onPress={() => setFacultyModalVisible(true)}>
             <Text>{selectedFaculty || 'Select Faculty'}</Text>
+            <Feather name="chevron-down" size={20} color="#D3D3D3" style={styles.iconRight} />
           </TouchableOpacity>
           <Modal visible={facultyModalVisible} transparent animationType="fade">
             <TouchableWithoutFeedback onPress={() => setFacultyModalVisible(false)}>
               <View style={styles.modalOverlay}>
                 <View style={styles.modalContent}>
-                  <FlatList data={faculties} renderItem={({ item }) => <TouchableOpacity onPress={() => handleSelectFaculty(item)}><Text>{item}</Text></TouchableOpacity>} />
+                  <FlatList 
+                    data={faculties} 
+                    renderItem={({ item }) => (
+                      <TouchableOpacity onPress={() => handleSelectFaculty(item)} style={styles.facultyItem}>
+                        <Text>{item}</Text>
+                      </TouchableOpacity>
+                    )}
+                  />
                 </View>
               </View>
             </TouchableWithoutFeedback>
           </Modal>
           <TouchableOpacity style={styles.input} onPress={() => setStateModalVisible(true)}>
             <Text>{selectedState || 'Select State'}</Text>
+            <Feather name="chevron-down" size={20} color="#D3D3D3" style={styles.iconRight} />
           </TouchableOpacity>
           <Modal visible={stateModalVisible} transparent animationType="fade">
             <TouchableWithoutFeedback onPress={() => setStateModalVisible(false)}>
               <View style={styles.modalOverlay}>
                 <View style={styles.modalContent}>
-                  <FlatList data={states} renderItem={({ item }) => <TouchableOpacity onPress={() => handleSelectState(item)}><Text>{item}</Text></TouchableOpacity>} />
+                  <FlatList 
+                    data={states} 
+                    renderItem={({ item }) => (
+                      <TouchableOpacity onPress={() => handleSelectState(item)} style={styles.stateItem}>
+                        <Text>{item}</Text>
+                      </TouchableOpacity>
+                    )}
+                  />
                 </View>
               </View>
             </TouchableWithoutFeedback>
           </Modal>
-          <TextInput style={styles.input} placeholder="Password" secureTextEntry value={formData.password} onChangeText={(text) => setFormData(prev => ({ ...prev, password: text }))} />
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Password"
+              secureTextEntry
+              value={formData.password}
+              onChangeText={(text) => setFormData(prev => ({ ...prev, password: text }))}
+            />
+            <Feather name="lock" size={20} color="#D3D3D3" style={styles.iconRight} />
+          </View>
         </View>
         <TouchableOpacity style={styles.registerButton} onPress={handleRegisterSubmit}>
           <Text style={styles.registerText}>Register</Text>
@@ -131,6 +180,7 @@ const styles = StyleSheet.create({
   avatarCircle: { width: 100, height: 100, borderRadius: 50, backgroundColor: '#FFBABA', justifyContent: 'center', alignItems: 'center' },
   cameraIcon: { position: 'absolute', bottom: -5, right: -5, backgroundColor: '#FF6969', borderRadius: 20, padding: 6 },
   all: { backgroundColor: '#fff', padding: 20, borderRadius: 12 },
+  inputContainer: { position: 'relative' },
   input: { 
     borderWidth: 1, 
     borderColor: '#D3D3D3', 
@@ -140,6 +190,7 @@ const styles = StyleSheet.create({
     fontSize: 16, 
     backgroundColor: '#fff' 
   },
+  iconRight: { position: 'absolute', right: 12, top: '50%', transform: [{ translateY: -10 }] },
   registerButton: {
     backgroundColor: '#FF6969', 
     paddingVertical: 12, 
@@ -169,5 +220,21 @@ const styles = StyleSheet.create({
     width: 100, 
     height: 100, 
     borderRadius: 50 
+  },
+  facultyItem: {
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#D3D3D3',
+    marginBottom: 10,
+    borderRadius: 8,
+    backgroundColor: '#fff',
+  },
+  stateItem: {
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#D3D3D3',
+    marginBottom: 10,
+    borderRadius: 8,
+    backgroundColor: '#fff',
   },
 });

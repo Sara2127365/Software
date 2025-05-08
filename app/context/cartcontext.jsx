@@ -55,6 +55,26 @@ export const CartProvider = ({ children }) => {
       console.error('خطأ أثناء تقليل الكمية:', error);
     }
   };
+  // إضافة العنصر إلى السلة
+const addToCart = async (item) => {
+  try {
+    const existingItem = cartItems.find(cartItem => cartItem.id === item.id);
+
+    if (existingItem) {
+      // إذا كان العنصر موجودًا، قم بزيادة الكمية
+      await increaseQuantity(existingItem);
+    } else {
+      // إذا كان العنصر غير موجود، قم بإضافته
+      await addDoc(collection(db, 'Cart'), {
+        ...item,
+        quantity: 1, // تعيين الكمية كبداية إلى 1
+      });
+    }
+    fetchCart();
+  } catch (error) {
+    console.error('خطأ أثناء إضافة العنصر إلى السلة:', error);
+  }
+};
 
   // تنفيذ الشراء
   const checkoutCart = async (address, faculty, userName) => {
@@ -123,6 +143,7 @@ export const CartProvider = ({ children }) => {
         checkoutCart,
         fetchCart,
         clearCart,
+        addToCart
       }}
     >
       {children}
