@@ -4,24 +4,15 @@ import { getFirestore } from 'firebase/firestore';
 import Constants from 'expo-constants';
 import { getStorage } from 'firebase/storage';
 
-const {
-    FIREBASE_API_KEY,
-    FIREBASE_AUTH_DOMAIN,
-    FIREBASE_PROJECT_ID,
-    FIREBASE_STORAGE_BUCKET,
-    FIREBASE_MESSAGING_SENDER_ID,
-    FIREBASE_APP_ID,
-    FIREBASE_MEASUREMENT_ID
-} = Constants.expoConfig.extra;
 
 const firebaseConfig = {
-    apiKey: FIREBASE_API_KEY,
-    authDomain: FIREBASE_AUTH_DOMAIN,
-    projectId: FIREBASE_PROJECT_ID,
-    storageBucket: FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: FIREBASE_MESSAGING_SENDER_ID,
-    appId: FIREBASE_APP_ID,
-    measurementId: FIREBASE_MEASUREMENT_ID
+    apiKey: "AIzaSyAPkcxVLlfL9F1RYevSRDvyF-1jd1SP7cc",
+  authDomain: "toomiia.firebaseapp.com",
+  projectId: "toomiia",
+  storageBucket: "toomiia.firebasestorage.app",
+  messagingSenderId: "543194296268",
+  appId: "1:543194296268:web:81ae1ae36a6b52a8037769",
+  measurementId: "G-15DVLM61R0"
 };
 
 const app = initializeApp(firebaseConfig);
