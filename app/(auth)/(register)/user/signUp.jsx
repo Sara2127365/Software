@@ -6,6 +6,10 @@ import Feather from '@expo/vector-icons/Feather';
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import { useRouter } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
+import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth';
+import { doc, getDoc, setDoc, collection } from 'firebase/firestore';
+import bcrypt from 'bcryptjs'; // Import bcryptjs
+import { auth, db } from '../../../../utils/firebase/config'; // Ensure this path is correct for your project
 
 const faculties = ['Faculty of Science', 'Faculty of Arts', 'Faculty of Business', 'Faculty of Law', 'Faculty of Archaeology', 'Faculty of Urban Planning', 'Faculty of Dar Al Uloom', 'Faculty of Mass Communication'];
 const states = ['Student', 'Worker'];
@@ -46,22 +50,68 @@ export default function SignUp() {
     }
   };
 
-  const handleRegisterSubmit = () => {
-    if (!formData.fullname || !formData.email || !formData.phone || !formData.password || !selectedFaculty || !selectedState) {
-      alert('Please fill in all fields');
+  const handleRegisterSubmit = async () => {
+    const { fullname, email, phone, password } = formData;
+
+    if (!fullname || !email || !phone || !password || !selectedFaculty || !selectedState) {
+      alert('يرجى ملء جميع الحقول');
       return;
     }
 
-    const userData = { ...formData, faculty: selectedFaculty, state: selectedState };
-    
-    // تسجيل المستخدم (إذا كنتِ تستخدمين backend helper أو Firebase، استخدميه هنا)
-    // handleRegister(userData);
+    const emailRegex = /\S+@\S+\.\S+/;
+    if (!emailRegex.test(email)) {
+      alert('صيغة البريد الإلكتروني غير صحيحة');
+      return;
+    }
 
-    // الانتقال إلى صفحة الـ Login بعد التسجيل
+    const phoneRegex = /^01[0-9]{9}$/;
+    if (!phoneRegex.test(phone)) {
+      alert('يرجى إدخال رقم هاتف مصري صحيح');
+      return;
+    }
+
+    if (password.length < 6) {
+      alert('كلمة المرور يجب أن تكون على الأقل 6 أحرف');
+      return;
+    }
+
     try {
-      router.push('/LoginPage');  // الانتقال إلى صفحة تسجيل الدخول بعد إتمام التسجيل
+      // Check if email exists in Firebase
+      const userRef = doc(db, "users", email);
+      const userDoc = await getDoc(userRef);
+
+      if (userDoc.exists()) {
+        alert('البريد الإلكتروني مستخدم بالفعل في النظام');
+        return;
+      }
+
+      // Hash the password before storing
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create the user account in Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Save user data to Firestore
+      await setDoc(doc(db, "users", email), {
+        fullname,
+        email,
+        phone,
+        faculty: selectedFaculty,
+        state: selectedState,
+        logo: formData.logo ? formData.logo.uri : null,
+        password: hashedPassword, // Save hashed password
+      });
+
+      alert('تم إنشاء الحساب بنجاح');
+      router.push('/LoginPage');
     } catch (error) {
-      console.error("Navigation error:", error);
+      if (error.code === 'auth/email-already-in-use') {
+        alert('هذا البريد الإلكتروني مستخدم بالفعل');
+      } else {
+        alert('حدث خطأ أثناء إنشاء الحساب');
+        console.error(error);
+      }
     }
   };
 
@@ -91,7 +141,7 @@ export default function SignUp() {
               style={styles.input}
               placeholder="Full name"
               value={formData.fullname}
-              onChangeText={(text) => setFormData(prev => ({ ...prev, fullname: text }))}
+              onChangeText={(text) => setFormData(prev => ({ ...prev, fullname: text }))} 
             />
             <Feather name="user" size={20} color="#D3D3D3" style={styles.iconRight} />
           </View>
@@ -100,7 +150,7 @@ export default function SignUp() {
               style={styles.input}
               placeholder="Email"
               value={formData.email}
-              onChangeText={(text) => setFormData(prev => ({ ...prev, email: text }))}
+              onChangeText={(text) => setFormData(prev => ({ ...prev, email: text }))} 
             />
             <Feather name="mail" size={20} color="#D3D3D3" style={styles.iconRight} />
           </View>
@@ -109,7 +159,7 @@ export default function SignUp() {
               style={styles.input}
               placeholder="Phone number"
               value={formData.phone}
-              onChangeText={(text) => setFormData(prev => ({ ...prev, phone: text }))}
+              onChangeText={(text) => setFormData(prev => ({ ...prev, phone: text }))} 
             />
             <Feather name="phone" size={20} color="#D3D3D3" style={styles.iconRight} />
           </View>
@@ -127,7 +177,7 @@ export default function SignUp() {
                       <TouchableOpacity onPress={() => handleSelectFaculty(item)} style={styles.facultyItem}>
                         <Text>{item}</Text>
                       </TouchableOpacity>
-                    )}
+                    )} 
                   />
                 </View>
               </View>
@@ -147,7 +197,7 @@ export default function SignUp() {
                       <TouchableOpacity onPress={() => handleSelectState(item)} style={styles.stateItem}>
                         <Text>{item}</Text>
                       </TouchableOpacity>
-                    )}
+                    )} 
                   />
                 </View>
               </View>
@@ -159,7 +209,7 @@ export default function SignUp() {
               placeholder="Password"
               secureTextEntry
               value={formData.password}
-              onChangeText={(text) => setFormData(prev => ({ ...prev, password: text }))}
+              onChangeText={(text) => setFormData(prev => ({ ...prev, password: text }))} 
             />
             <Feather name="lock" size={20} color="#D3D3D3" style={styles.iconRight} />
           </View>
@@ -199,7 +249,7 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   registerText: {
-    color: 'bold', 
+    color: 'white', 
     fontSize: 18, 
     fontWeight: 'bold',
   },
