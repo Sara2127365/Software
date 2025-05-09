@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, ScrollView, TextInput } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { doc, getDoc, collection, query, where, getDocs, setDoc } from 'firebase/firestore';
-import { db, auth } from '../../utils/firebase/config'; // تأكد من استيراد auth
+import { doc, getDoc, collection, query, where, getDocs, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { db, auth } from '../../utils/firebase/config'; 
 import FlipCard from 'react-native-flip-card';
+import StarRating, { Rating } from 'react-native-ratings';
+import { AirbnbRating } from 'react-native-ratings';
 
 const RestaurantDetails = () => {
   const { id } = useLocalSearchParams();
@@ -14,6 +16,9 @@ const RestaurantDetails = () => {
   const [categories, setCategories] = useState(['top selling']);
   const [selectedCategory, setSelectedCategory] = useState('top selling');
   const [productQuantities, setProductQuantities] = useState({});
+  const [reviews, setReviews] = useState([]);
+  const [reviewText, setReviewText] = useState('');
+  const [rating, setRating] = useState(5);
   const [totalItems, setTotalItems] = useState(0);
   const [flippedStates, setFlippedStates] = useState({});
 
@@ -43,12 +48,76 @@ const RestaurantDetails = () => {
         console.error('Error fetching products:', error);
       }
     };
+    const loadReviews = async () => {
+      try {
+        const q = query(collection(db, 'reviews'), where('restaurantId', '==', id));
+        const snapshot = await getDocs(q);
+        setReviews(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      } catch (error) {
+        console.error('Error fetching reviews:', error);
+      }
+    };
 
     if (id) {
       fetchData();
       fetchProducts();
+      loadReviews();
     }
   }, [id]);
+  
+
+  const calculateAverageRating = () => {
+    if (reviews.length === 0) return "No Rating";
+    const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+    return (totalRating / reviews.length).toFixed(1);
+  };
+
+  const handleAddReview = async () => {
+    if (!auth.currentUser) return alert("يجب تسجيل الدخول لإضافة مراجعة!");
+    
+    try {
+      await addDoc(collection(db, "reviews"), {
+        restaurantId: id,
+        userId: auth.currentUser.uid,
+        rating,
+        reviewText,
+        createdAt: new Date(),
+      });
+
+      setReviewText('');
+      setRating(5);
+
+      const updatedReviews = await getDocs(query(collection(db, "reviews"), where("restaurantId", "==", id)));
+      setReviews(updatedReviews.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    } catch (error) {
+      console.error("خطأ أثناء إضافة المراجعة:", error);
+    }
+  };
+
+  const handleUpdateReview = async (reviewId, newText, newRating) => {
+    try {
+      const reviewRef = doc(db, "reviews", reviewId);
+      await updateDoc(reviewRef, { reviewText: newText, rating: newRating });
+
+      alert("تم تحديث المراجعة بنجاح!");
+      const updatedReviews = await getDocs(query(collection(db, "reviews"), where("restaurantId", "==", id)));
+      setReviews(updatedReviews.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
+    } catch (error) {
+      console.error("خطأ أثناء تحديث المراجعة:", error);
+    }
+  };
+
+  const handleDeleteReview = async (reviewId) => {
+    try {
+      await deleteDoc(doc(db, "reviews", reviewId));
+      setReviews(reviews.filter(review => review.id !== reviewId));
+      alert("تم حذف المراجعة بنجاح!");
+    } catch (error) {
+      console.error("خطأ أثناء حذف المراجعة:", error);
+    }
+  };
+  
 
   useEffect(() => {
     const total = Object.values(productQuantities).reduce((sum, qty) => sum + qty, 0);
@@ -90,7 +159,7 @@ const RestaurantDetails = () => {
 
   const saveCartToFirestore = async (cartData) => {
     try {
-      const userCartRef = doc(db, 'carts', auth.currentUser.uid); // تحديد المستخدم باستخدام UID
+      const userCartRef = doc(db, 'carts', auth.currentUser.uid);
       await setDoc(userCartRef, { items: cartData });
       console.log('Cart saved to Firestore');
     } catch (error) {
@@ -201,6 +270,58 @@ const RestaurantDetails = () => {
         numColumns={2}
         columnWrapperStyle={styles.row}
       />
+      <View style={styles.topBar}>
+        <Text style={styles.pageTitle}>{restaurant?.name}</Text>
+        <Text style={styles.ratingText}>⭐ {calculateAverageRating()}</Text>
+      </View>
+
+      <FlatList
+        data={reviews}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <View style={styles.reviewCard}>
+            <Text style={styles.reviewRating}>⭐ {item.rating}</Text>
+            <Text style={styles.reviewText}>{item.reviewText}</Text>
+             {item.userId === auth.currentUser?.uid && (
+              <>
+                <TouchableOpacity onPress={() => handleUpdateReview(item.id, "Edited", 4)} style={styles.editButton}>
+                  <Text style={styles.editButtonText}>✏️ Edit</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => handleDeleteReview(item.id)} style={styles.deleteButton}>
+                  <Text style={styles.deleteButtonText}>🗑️ Delete</Text>
+                </TouchableOpacity>
+              </>
+            )}
+
+            
+          </View>
+        )}
+      />
+
+      <View style={styles.reviewInputContainer}>
+        <Text style={styles.label}>Rating:</Text>
+        <AirbnbRating
+  count={5} // عدد النجوم المتاحة
+  defaultRating={rating} // التقييم الافتراضي
+  size={30} // حجم النجوم
+  onFinishRating={(newRating) => setRating(newRating)} // تحديث عند تغيير التقييم
+/>
+
+        <Text style={styles.label}>write your review:</Text>
+        <TextInput
+          placeholder="write here.."
+          value={reviewText}
+          onChangeText={setReviewText}
+          style={styles.reviewInput}
+        />
+
+        <TouchableOpacity onPress={handleAddReview} style={styles.reviewButton}>
+          <Text style={styles.reviewButtonText}>send rating</Text>
+        </TouchableOpacity>
+      </View>
+
+
     </ScrollView>
   );
 };
@@ -390,6 +511,50 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
   },
+  ratingText: { 
+    fontSize: 18, color: '#FFA500' 
+
+  },
+  reviewCard: { 
+    padding: 10, borderBottomWidth: 1 
+
+  },
+  reviewRating: { 
+    fontWeight: 'bold', fontSize: 16, color: '#FFA500' 
+
+  },
+  reviewText: { 
+    fontSize: 14, color: '#333' 
+
+  },
+  reviewInputContainer: { 
+    marginTop: 20, padding: 16, backgroundColor: '#f9f9f9', borderRadius: 8 
+
+  },
+  label: { 
+    fontSize: 16, fontWeight: 'bold', marginBottom: 8 },
+  reviewInput: { 
+    borderWidth: 1, padding: 8, borderRadius: 8, marginBottom: 16 
+
+  },
+  reviewButton: { 
+    backgroundColor: 'rgb(255 105 105)', padding: 12, borderRadius: 8 
+
+  },
+  reviewButtonText: { 
+    color: 'black', textAlign: 'center', fontSize: 16, fontWeight: 'bold' 
+  },
+  editButton: { 
+    backgroundColor: '#FFA500', padding: 6, borderRadius: 4, marginTop: 4 },
+  editButtonText: { 
+    color: 'white', fontSize: 14, fontWeight: 'bold' 
+  },
+  deleteButton: { 
+    backgroundColor: 'rgb(255 105 105)', padding: 6, borderRadius: 4, marginTop: 4 
+  },
+  deleteButtonText: { color: 'white', fontSize: 14, fontWeight: 'bold'
+  },
 });
+
 
 export default RestaurantDetails;
