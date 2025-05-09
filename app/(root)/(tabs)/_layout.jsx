@@ -7,8 +7,9 @@ const TabIcon = ({ focused, title, Icon }) => (
     <View className="flex-1 mt-3 flex flex-col items-center">
         {Icon}
         <Text
-            className={`${focused ? 'text-[#CC4C4C]' : 'text-[#FF6969]'
-                } text-xs w-full text-center mt-1`}
+            className={`${
+                focused ? 'text-[#CC4C4C]' : 'text-[#FF6969]'
+            } text-xs w-full text-center mt-1`}
         >
             {title}
         </Text>
@@ -131,29 +132,47 @@ const _layout = () => {
                 }}
             />
 
-<Tabs.Screen
-  name="Cart"
-  options={{
-    title: 'Cart',
-    headerShown: false,
-    tabBarIcon: ({ focused }) => (
-      <TabIcon
-        focused={focused}
-        Icon={
-          <Icon
-            name="shopping-cart"
-            size={17}
-            color={focused ? '#CC4C4C' : '#FF6969'}
-          />
-        }
-        title="Cart"
-      />
-    )
-  }}
-/>
+            <Tabs.Screen
+                name="Cart"
+                options={{
+                    title: 'Cart',
+                    headerShown: false,
+                    tabBarIcon: ({ focused }) => (
+                        <TabIcon
+                            focused={focused}
+                            Icon={
+                                <Icon
+                                    name="shopping-cart"
+                                    size={17}
+                                    color={focused ? '#CC4C4C' : '#FF6969'}
+                                />
+                            }
+                            title="Cart"
+                        />
+                    )
+                }}
+            />
 
-
-
+            <Tabs.Screen
+                name="Dasboard"
+                options={{
+                    title: 'Dasboard',
+                    headerShown: false,
+                    tabBarIcon: ({ focused }) => (
+                        <TabIcon
+                            focused={focused}
+                            Icon={
+                                <Icon
+                                    name="dashboard"
+                                    size={17}
+                                    color={focused ? '#CC4C4C' : '#FF6969'}
+                                />
+                            }
+                            title="Dasboard"
+                        />
+                    )
+                }}
+            />
         </Tabs>
     );
 };
