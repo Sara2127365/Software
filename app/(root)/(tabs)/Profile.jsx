@@ -211,7 +211,6 @@ export default function Profile() {
                     <Text style={styles.label}>Info</Text>
                     <TextInput style={styles.input} editable={editBtn} value={RestaurantData.info} onChangeText={(e) => { handleChange("info", e) }} />
 
-                    <Pressable style={styles.deleteBtn} onPress={() => deleteUser()}>Delete</Pressable>
                 </View>
 
             </View>
