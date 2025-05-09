@@ -4,8 +4,10 @@ import { emailIcon, passwordIcon } from '../../constants/icons';
 import Input from '../../common/Input';
 import LargeBtn from '../../common/LargeBtn';
 import { handleLogin } from '../../utils/backend helpers/authCalls';
+import { getUserData } from '../../utils/backend helpers/authCalls'; // أضيفي دي
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { auth } from '../../utils/firebase/config'; // تأكدي إن عندك دي
 
 const LoginPage = () => {
   const router = useRouter();
@@ -21,17 +23,21 @@ const LoginPage = () => {
   async function handleSubmit() {
     const result = await handleLogin(formData);
     if (result) {
-      const userData = {
-        email: formData.email,
-        // يمكنك إضافة بيانات أخرى مثل اسم المستخدم إذا كانت موجودة
-      };
+      const currentUser = auth.currentUser;
 
-      // تخزين البيانات في AsyncStorage
-      await AsyncStorage.setItem('userData', JSON.stringify(userData));
-      console.log("Data saved:", userData); // للتأكد من التخزين
+      if (currentUser) {
+        const fullUserData = await getUserData(currentUser.uid);
 
-      router.replace('/ProfileScreen');  // التوجيه إلى صفحة البروفايل
-      AsyncStorage.setItem('status', 'true');
+        if (fullUserData) {
+          await AsyncStorage.setItem('userData', JSON.stringify(fullUserData));
+          console.log("User data saved:", fullUserData);
+        } else {
+          console.log("No user data found in Firestore.");
+        }
+
+        await AsyncStorage.setItem('status', 'true');
+        router.replace('/ProfileScreen');
+      }
     }
   }
 
