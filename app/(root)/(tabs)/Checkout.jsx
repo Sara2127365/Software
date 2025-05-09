@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, Button, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  Image,
+  StyleSheet,
+  Button,
+  Alert,
+} from 'react-native';
 import { auth, db } from '../../../utils/firebase/config';
 import { doc, getDoc } from 'firebase/firestore';
 
@@ -16,15 +24,20 @@ const Checkout = () => {
           const cartSnap = await getDoc(cartRef);
           if (cartSnap.exists()) {
             const cartData = cartSnap.data();
-            const filteredItems = cartData.items.filter(item => item.quantity > 0);
+            const filteredItems = cartData.items.filter(
+              (item) => item.quantity > 0
+            );
             setCart(filteredItems);
-            const calculatedTotal = filteredItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            const calculatedTotal = filteredItems.reduce(
+              (sum, item) => sum + item.price * item.quantity,
+              0
+            );
             setTotal(calculatedTotal);
           } else {
-            console.log("Cart is empty.");
+            console.log('Cart is empty.');
           }
         } catch (error) {
-          console.error("Error fetching cart:", error);
+          console.error('Error fetching cart:', error);
         }
       }
     };
@@ -34,11 +47,12 @@ const Checkout = () => {
 
   const handleCheckout = () => {
     if (!cart || cart.length === 0) {
-      Alert.alert("Checkout Error", "Your cart is empty.");
+      Alert.alert('Checkout Error', 'Your cart is empty.');
       return;
     }
-    Alert.alert("Success", "Your order has been placed!");
-    // هنا ممكن تضيف كود لمسح السلة أو إرسال الطلب
+
+    Alert.alert('Success', 'Your order has been placed!');
+    // هنا يمكن حذف السلة بعد الطلب إذا أردت
   };
 
   return (
@@ -63,9 +77,12 @@ const Checkout = () => {
                 </View>
               </View>
             )}
+            style={{ marginBottom: 100 }}
           />
-          <Text style={styles.total}>Total: {total} EGP</Text>
-          <Button title="Place Order" onPress={handleCheckout} />
+          <View style={styles.bottomSection}>
+            <Text style={styles.total}>Total: {total} EGP</Text>
+            <Button title="Place Order" onPress={handleCheckout} />
+          </View>
         </>
       )}
     </View>
@@ -106,8 +123,18 @@ const styles = StyleSheet.create({
   total: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginTop: 16,
+    marginBottom: 10,
     textAlign: 'right',
+  },
+  bottomSection: {
+    position: 'absolute',
+    bottom: 10,
+    left: 16,
+    right: 16,
+    backgroundColor: '#fff',
+    padding: 10,
+    borderTopWidth: 1,
+    borderColor: '#ccc',
   },
 });
 
