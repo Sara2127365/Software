@@ -1,32 +1,31 @@
-import { doc, getDoc, remove, updateDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db, storage, auth } from '../../../utils/firebase/config'
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Loading from "../../../components/onboarding/Loading";
 import { getStorage, ref, getDownloadURL, uploadBytes } from 'firebase/storage';
-import MultiSelect from "../../../components/mini components/MultiSelect";
 import * as DocumentPicker from 'expo-document-picker';
 import { useNavigation } from "expo-router";
 import '../../../app/globals'
+
 export default function Profile() {
     const navigation = useNavigation()
     const [RestaurantData, setRestaurantData] = useState({})
     const [id, setId] = useState(auth.currentUser.uid)
-    const [logo, setlogo] = useState("")
-    const [cover, setcover] = useState("")
+    const [logo, setLogo] = useState("")
+    const [cover, setCover] = useState("")
 
-    //GetData
+    // Get Data
     async function getUserData(userId) {
         try {
             const docRef = doc(db, "service-users", userId);
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
-                setRestaurantData(docSnap.data())
-
+                setRestaurantData(docSnap.data());
                 return docSnap.data();
             } else {
-                console.log("No  user!");
+                console.log("No user!");
                 return null;
             }
         } catch (error) {
@@ -34,72 +33,55 @@ export default function Profile() {
             throw error;
         }
     }
-    //delete
-    async function deleteUser() {
-        try {
-            const userRef = ref(db, `service-users/${id}`);
-            // await remove(userRef);
-            console.log(`User ${id} deleted successfully`);
-        } catch (error) {
-            console.error("Error deleting user:", error);
-            throw error;
-        }
 
-
-
-    }
-
-    //Updata
+    // Update User
     const updateUser = async () => {
         const userId = id;
         const userRef = doc(db, 'service-users', userId);
         try {
-            await updateDoc(userRef, RestaurantData);
+            await updateDoc(userRef, RestaurantData);  // Update Firestore with new data
         } catch (error) {
             console.error('Error updating user:', error);
         }
-        seteditbtn(!editbtn)
+        setEditBtn(!editBtn);
     };
 
-
-    const [editbtn, seteditbtn] = useState(false)
+    const [editBtn, setEditBtn] = useState(false);
     const handleChange = (field, text) => {
         setRestaurantData(prev => ({
             ...prev,
             [field]: text
         }));
     };
+
     const [isMultiSelectOpen, setIsMultiSelectOpen] = useState(false);
 
     const getImageUrl = async () => {
         const storage = getStorage();
-        const coverImg = ref(storage, `services/covers/${id}`)
-        const logoImg = ref(storage, `services/logos/${id}`)
+        const coverImg = ref(storage, `services/covers/${id}`);
+        const logoImg = ref(storage, `services/logos/${id}`);
         try {
             const url1 = await getDownloadURL(coverImg);
             const url2 = await getDownloadURL(logoImg);
-            setcover(url1)
-            setlogo(url2)
+            setCover(url1);
+            setLogo(url2);
         } catch (error) {
             console.error('Error fetching image:', error);
             return null;
         }
     };
-    const handelEdit = () => {
-        seteditbtn(!editbtn)
-    }
+
+    const handleEdit = () => {
+        setEditBtn(!editBtn);
+    };
 
     useEffect(() => {
-        getUserData(id)
-        getImageUrl()
-    }, [])
+        getUserData(id);
+        getImageUrl();
+    }, []);
 
-
-
-
-    const uploadImage = async (uri, imgname) => {
-        const imageRef = ref(storage, `services/${imgname}/${id}`);
-
+    const uploadImage = async (uri, imgName) => {
+        const imageRef = ref(storage, `services/${imgName}/${id}`);
         try {
             const response = await fetch(uri);
             const blob = await response.blob();
@@ -110,36 +92,27 @@ export default function Profile() {
             const url = await getDownloadURL(imageRef);
             return url;
 
-
         } catch (error) {
             console.error('Error uploading image:', error);
             return null;
         }
-
     };
 
-
     const handleFileUpload = async (name) => {
-
         const fileUri = await pickDocument();
         if (fileUri) {
             const downloadUrl = await uploadImage(fileUri, name);
-            // console.log('Uploaded & got URL:', downloadUrl);'
-
             if (downloadUrl) {
-
-                getImageUrl()
-
+                getImageUrl(); // Refresh images after upload
             }
         }
-
-
     };
+
     // Function to pick image from device gallery
     const pickDocument = async () => {
         try {
             const result = await DocumentPicker.getDocumentAsync({
-                type: 'image/*', // you can change this to '*/*' for all files
+                type: 'image/*',
                 copyToCacheDirectory: true,
                 multiple: false,
             });
@@ -147,19 +120,46 @@ export default function Profile() {
             if (result.canceled === true) return null;
 
             const file = result.assets[0];
-            // console.log('Picked file:', file);
-
             return file.uri;
         } catch (error) {
             console.error('Error picking document:', error);
             return null;
         }
     };
+
+    // Function to handle registration
+    const handleSignUp = async () => {
+        if (editBtn) {
+            // Save the data to Firestore upon registration
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                await setDoc(doc(db, 'service-users', user.uid), {
+                    serviceName: RestaurantData.serviceName,
+                    email: RestaurantData.email,
+                    phoneNumber: RestaurantData.phoneNumber,
+                    categories: [],
+                    info: '',
+                    createdAt: new Date(),
+                });
+
+                navigation.navigate('Profile');  // Redirect to Profile page after successful registration
+            } catch (error) {
+                console.error(error);
+                alert('Error during sign up: ' + error.message);
+            }
+        } else {
+            // Update profile data
+            updateUser();
+        }
+    };
+
     return (
-        Object.keys(RestaurantData).length > 0 ?
+        Object.keys(RestaurantData).length > 0 ? (
             <View style={styles.container}>
                 <View style={styles.header}>
-                    <Text style={styles.welcome}>Welcome , User</Text>
+                    <Text style={styles.welcome}>Welcome, User</Text>
                     <Text style={styles.brand}>Toomiia</Text>
                 </View>
                 <View style={styles.backRow}>
@@ -167,68 +167,57 @@ export default function Profile() {
                         <Ionicons name="arrow-back" size={28} color="#f26666" />
                     </Pressable>
 
-                    <TouchableOpacity >
-                        <Text onPress={() => handelEdit()} style={styles.editBtn}>{editbtn ? <Text onPress={() => updateUser()}>
-                            submit
-                        </Text> : "edit"}</Text>
+                    <TouchableOpacity>
+                        <Text onPress={handleEdit} style={styles.editBtn}>
+                            {editBtn ? <Text onPress={handleSignUp}>Submit</Text> : "Edit"}
+                        </Text>
                     </TouchableOpacity>
                 </View>
-                <View style={styles.coverSection}>
 
-                    <TouchableOpacity
-                        onPress={() => handleFileUpload("covers")}
-                        style={styles.coverBox}                    >
-                        {cover.length > 0 ? <img style={styles.coverBox} src={cover} width={100} height={100} />
+                <View style={styles.coverSection}>
+                    <TouchableOpacity onPress={() => handleFileUpload("covers")} style={styles.coverBox}>
+                        {cover.length > 0 ? <Image style={styles.coverBox} source={{ uri: cover }} width={100} height={100} />
                             : <View style={styles.coverBox}>
-                                <Text style={styles.coverText}>
-                                    C O V E R
-                                </Text>
+                                <Text style={styles.coverText}>C O V E R</Text>
                             </View>
                         }
-
                     </TouchableOpacity>
 
-                    <TouchableOpacity
-                        onPress={() => handleFileUpload("logos")}
-
-                    >
-                        {logo.length > 0 ? <img src={logo} style={styles.avatar} />
+                    <TouchableOpacity onPress={() => handleFileUpload("logos")}>
+                        {logo.length > 0 ? <Image source={{ uri: logo }} style={styles.avatar} />
                             : <View style={styles.avatar}>
                                 <Ionicons name="person" size={50} color="white" />
                             </View>}
-
                     </TouchableOpacity>
                 </View>
+
                 <View style={styles.form}>
-                    <label style={styles.label}>Name</label>
-                    <TextInput style={styles.input} editable={editbtn} value={RestaurantData.serviceName} onChangeText={(e) => { handleChange("serviceName", e) }} />
+                    <Text style={styles.label}>Service Name</Text>
+                    <TextInput style={styles.input} editable={editBtn} value={RestaurantData.serviceName} onChangeText={(e) => { handleChange("serviceName", e) }} />
 
-                    <label style={styles.label}>Email</label>
-                    <TextInput keyboardType="email-address" style={styles.input} editable={editbtn} value={RestaurantData.email} onChangeText={(e) => { handleChange("email", e) }} />
+                    <Text style={styles.label}>Email</Text>
+                    <TextInput keyboardType="email-address" style={styles.input} editable={editBtn} value={RestaurantData.email} onChangeText={(e) => { handleChange("email", e) }} />
 
-                    <label style={styles.label}>PhoneNumber</label>
-                    <TextInput keyboardType="numeric" autoCapitalize="none" style={styles.input} editable={editbtn} value={RestaurantData.phoneNumber} onChangeText={(e) => { handleChange("phoneNumber", e) }} />
+                    <Text style={styles.label}>Phone Number</Text>
+                    <TextInput keyboardType="numeric" autoCapitalize="none" style={styles.input} editable={editBtn} value={RestaurantData.phoneNumber} onChangeText={(e) => { handleChange("phoneNumber", e) }} />
 
-                    <label style={styles.label}>Categories</label>
+                    <Text style={styles.label}>Categories</Text>
                     <Text style={styles.input}>
-                        {RestaurantData.categories.map((t, inex) => {
-                            return <Text key={inex}>  {t + "," + " "} </Text>
+                        {RestaurantData.categories.map((t, index) => {
+                            return <Text key={index}>{t + ","} </Text>
                         })}
-
                     </Text>
-                    <label style={styles.label}>Info</label>
-                    <TextInput style={styles.input} editable={editbtn} value={RestaurantData.info} onChangeText={(e) => { handleChange("info", e) }} />
-                    <Pressable style={styles.deleteBtn} onPress={() => deleteUser()}>delete</Pressable>
 
+                    <Text style={styles.label}>Info</Text>
+                    <TextInput style={styles.input} editable={editBtn} value={RestaurantData.info} onChangeText={(e) => { handleChange("info", e) }} />
 
+                    <Pressable style={styles.deleteBtn} onPress={() => deleteUser()}>Delete</Pressable>
                 </View>
 
             </View>
-            : <Loading />
-    )
+        ) : <Loading />
+    );
 };
-
-
 
 const styles = StyleSheet.create({
     container: {

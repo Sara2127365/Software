@@ -21,7 +21,16 @@ const LoginPage = () => {
   async function handleSubmit() {
     const result = await handleLogin(formData);
     if (result) {
-      router.replace('/');
+      const userData = {
+        email: formData.email,
+        // يمكنك إضافة بيانات أخرى مثل اسم المستخدم إذا كانت موجودة
+      };
+
+      // تخزين البيانات في AsyncStorage
+      await AsyncStorage.setItem('userData', JSON.stringify(userData));
+      console.log("Data saved:", userData); // للتأكد من التخزين
+
+      router.replace('/ProfileScreen');  // التوجيه إلى صفحة البروفايل
       AsyncStorage.setItem('status', 'true');
     }
   }
