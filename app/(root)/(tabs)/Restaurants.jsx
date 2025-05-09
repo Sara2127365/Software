@@ -6,7 +6,7 @@ import {
     FlatList,
     TextInput,
     TouchableOpacity,
-    Image
+    Image,
 } from 'react-native';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../utils/firebase/config';
@@ -16,6 +16,7 @@ const Restaurants = () => {
     const [restaurants, setRestaurants] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
     const [searchText, setSearchText] = useState('');
+    const [suggestions, setSuggestions] = useState([]);
     const [selectedTag, setSelectedTag] = useState(null);
     const [selectedRating, setSelectedRating] = useState(null);
     const [showRatingOptions, setShowRatingOptions] = useState(false);
@@ -62,16 +63,30 @@ const Restaurants = () => {
             );
         }
 
-
         if (selectedRating) {
             filtered = filtered.filter(item =>
                 item.rating && parseFloat(item.rating) >= selectedRating
             );
-
         }
 
         setFilteredData(filtered);
     }, [searchText, selectedTag, selectedRating, restaurants]);
+
+    useEffect(() => {
+        if (searchText.trim() === '') {
+            setSuggestions([]);
+            return;
+        }
+
+        const matches = restaurants
+            .map(r => r.serviceName)
+            .filter(name =>
+                name?.toLowerCase().includes(searchText.toLowerCase())
+            )
+            .slice(0, 5);
+
+        setSuggestions(matches);
+    }, [searchText, restaurants]);
 
     return (
         <View style={styles.container}>
@@ -88,6 +103,23 @@ const Restaurants = () => {
                     value={searchText}
                     onChangeText={setSearchText}
                 />
+
+                {suggestions.length > 0 && (
+                    <View style={styles.suggestionsBox}>
+                        {suggestions.map((suggestion, index) => (
+                            <TouchableOpacity
+                                key={index}
+                                onPress={() => {
+                                    setSearchText(suggestion);
+                                    setSuggestions([]);
+                                }}
+                                style={styles.suggestionItem}
+                            >
+                                <Text style={styles.suggestionText}>{suggestion}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                )}
             </View>
 
             <View style={styles.filterContainer}>
@@ -137,6 +169,7 @@ const Restaurants = () => {
                 >
                     <Text style={styles.filterText}>Rating</Text>
                 </TouchableOpacity>
+
                 <TouchableOpacity style={styles.filterButton} onPress={() => {
                     setSelectedTag(null);
                     setSelectedRating(null);
@@ -167,13 +200,11 @@ const Restaurants = () => {
                 keyExtractor={item => item.id}
                 renderItem={({ item }) => (
                     <TouchableOpacity style={styles.card} onPress={() => router.push(`/restaurant/${item.id}`)}>
-
                         <Image
                             source={{ uri: item.image }}
                             style={styles.cardImage}
                             resizeMode="cover"
                         />
-
                         <View style={styles.cardContent}>
                             <View style={styles.cardHeader}>
                                 <Text style={styles.cardTitle}>{item.serviceName}</Text>
@@ -188,7 +219,6 @@ const Restaurants = () => {
                                         </View>
                                     ))}
                             </View>
-
                         </View>
                     </TouchableOpacity>
                 )}
@@ -227,7 +257,9 @@ const styles = StyleSheet.create({
         color: '#CC4C4C'
     },
     searchContainer: {
-        marginBottom: 16
+        marginBottom: 16,
+        position: 'relative',
+        zIndex: 10
     },
     searchInput: {
         height: 40,
@@ -236,6 +268,25 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         paddingHorizontal: 12,
         fontSize: 16
+    },
+    suggestionsBox: {
+        backgroundColor: '#fff',
+        borderColor: '#ccc',
+        borderWidth: 1,
+        borderTopWidth: 0,
+        borderBottomLeftRadius: 8,
+        borderBottomRightRadius: 8,
+        maxHeight: 150,
+        overflow: 'hidden'
+    },
+    suggestionItem: {
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee'
+    },
+    suggestionText: {
+        fontSize: 14,
+        color: '#333'
     },
     filterContainer: {
         flexDirection: 'row',
@@ -327,7 +378,6 @@ const styles = StyleSheet.create({
     activeFilterText: {
         color: '#fff',
     },
-
 });
 
 export default Restaurants;
