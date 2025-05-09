@@ -6,10 +6,9 @@ import Feather from '@expo/vector-icons/Feather';
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import { useRouter } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
-import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth';
-import { doc, getDoc, setDoc, collection } from 'firebase/firestore';
-import bcrypt from 'bcryptjs'; // Import bcryptjs
-import { auth, db } from '../../../../utils/firebase/config'; // Ensure this path is correct for your project
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { auth, db } from '../../../../utils/firebase/config';
 
 const faculties = ['Faculty of Science', 'Faculty of Arts', 'Faculty of Business', 'Faculty of Law', 'Faculty of Archaeology', 'Faculty of Urban Planning', 'Faculty of Dar Al Uloom', 'Faculty of Mass Communication'];
 const states = ['Student', 'Worker'];
@@ -21,9 +20,9 @@ export default function SignUp() {
   const [selectedFaculty, setSelectedFaculty] = useState(null);
   const [selectedState, setSelectedState] = useState(null);
   const [formData, setFormData] = useState({
-    fullname: '',
+    name: '',
     email: '',
-    phone: '',
+    phoneNumber: '',
     password: '',
     logo: null,
   });
@@ -51,9 +50,9 @@ export default function SignUp() {
   };
 
   const handleRegisterSubmit = async () => {
-    const { fullname, email, phone, password } = formData;
+    const { name, email, phoneNumber, password } = formData;
 
-    if (!fullname || !email || !phone || !password || !selectedFaculty || !selectedState) {
+    if (!name || !email || !phoneNumber || !password || !selectedFaculty || !selectedState) {
       alert('يرجى ملء جميع الحقول');
       return;
     }
@@ -64,8 +63,8 @@ export default function SignUp() {
       return;
     }
 
-    const phoneRegex = /^01[0-9]{9}$/;
-    if (!phoneRegex.test(phone)) {
+    const phoneNumberRegex = /^01[0-9]{9}$/;
+    if (!phoneNumberRegex.test(phoneNumber)) {
       alert('يرجى إدخال رقم هاتف مصري صحيح');
       return;
     }
@@ -76,7 +75,6 @@ export default function SignUp() {
     }
 
     try {
-      // Check if email exists in Firebase
       const userRef = doc(db, "users", email);
       const userDoc = await getDoc(userRef);
 
@@ -85,22 +83,17 @@ export default function SignUp() {
         return;
       }
 
-      // Hash the password before storing
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      // Create the user account in Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Save user data to Firestore
       await setDoc(doc(db, "users", email), {
-        fullname,
+        name,
         email,
-        phone,
+        phoneNumber,
         faculty: selectedFaculty,
         state: selectedState,
         logo: formData.logo ? formData.logo.uri : null,
-        password: hashedPassword, // Save hashed password
+        password: password, // تخزين كلمة المرور كما هي
       });
 
       alert('تم إنشاء الحساب بنجاح');
@@ -140,8 +133,8 @@ export default function SignUp() {
             <TextInput
               style={styles.input}
               placeholder="Full name"
-              value={formData.fullname}
-              onChangeText={(text) => setFormData(prev => ({ ...prev, fullname: text }))} 
+              value={formData.name}
+              onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))} 
             />
             <Feather name="user" size={20} color="#D3D3D3" style={styles.iconRight} />
           </View>
@@ -157,11 +150,11 @@ export default function SignUp() {
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
-              placeholder="Phone number"
-              value={formData.phone}
-              onChangeText={(text) => setFormData(prev => ({ ...prev, phone: text }))} 
+              placeholder="Phone Number"
+              value={formData.phoneNumber}
+              onChangeText={(text) => setFormData(prev => ({ ...prev, phoneNumber: text }))} 
             />
-            <Feather name="phone" size={20} color="#D3D3D3" style={styles.iconRight} />
+            <Feather name="phoneNumber" size={20} color="#D3D3D3" style={styles.iconRight} />
           </View>
           <TouchableOpacity style={styles.input} onPress={() => setFacultyModalVisible(true)}>
             <Text>{selectedFaculty || 'Select Faculty'}</Text>
