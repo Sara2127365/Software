@@ -27,6 +27,8 @@ import MultiSelect from '../../../../components/mini components/MultiSelect';
 import { signUp } from '../../../../utils/firebase/auth';
 import Toast from 'react-native-toast-message';
 import { createServiceAccount } from '../../../../utils/backend helpers/authCalls';
+import useGetData from '../../../../utils/custom hooks/useGetData';
+import { getAllCategories } from '../../../../utils/backend helpers/foodCalls';
 
 const ServiceRegister = () => {
     const router = useRouter();
@@ -43,10 +45,12 @@ const ServiceRegister = () => {
         password: ''
     });
 
+    const { data: categories } = useGetData({ fn: getAllCategories });
+
     console.log('FILE FILE', file);
 
     console.log(`formData`, formData);
-
+321
     function handleChange(value, id) {
         setFormData(old => ({ ...old, [id]: value }));
     }
@@ -71,9 +75,9 @@ const ServiceRegister = () => {
     };
 
     async function handleSubmit() {
-        const result = await createServiceAccount(formData)
+        const result = await createServiceAccount(formData);
         if (result) {
-            router.replace('/LoginPage')
+            router.replace('/LoginPage');
         }
     }
 
@@ -180,6 +184,9 @@ const ServiceRegister = () => {
                             icon={informationIcon(24)}
                         />
                         <MultiSelect
+                            objKey="categories"
+                            setData={setFormData}
+                            options={categories}
                             setIsMultiSelectOpen={setIsMultiSelectOpen}
                             isMultiSelectOpen={isMultiSelectOpen}
                             title="categories"

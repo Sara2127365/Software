@@ -16,6 +16,13 @@ export const signUp = async obj => {
         )
             throw new Error('Logo and cover images are required');
 
+        if (obj.table === 'service-users') {
+            await Promise.all([
+                uploadImage(obj.logo.uri, `services/logos/${1}`),
+                uploadImage(obj.cover.uri, `services/covers/${1}`)
+            ]);
+        }
+
         const userCredential = await createUserWithEmailAndPassword(
             auth,
             obj.email,
@@ -52,13 +59,6 @@ export const signUp = async obj => {
                   }
         );
 
-        if (obj.table === 'service-users') {
-            await Promise.all([
-                uploadImage(obj.logo.uri, `services/logos/${user.uid}`),
-                uploadImage(obj.cover.uri, `services/covers/${user.uid}`)
-            ]);
-        }
-
         console.log('User signed up and data saved!');
         return { success: true, uid: user.uid };
     } catch (error) {
@@ -67,7 +67,6 @@ export const signUp = async obj => {
 };
 
 export const Login = async obj => {
-
     console.log(obj);
 
     try {

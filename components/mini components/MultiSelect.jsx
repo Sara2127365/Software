@@ -5,52 +5,46 @@ import {
     ScrollView,
     Pressable
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { checkIcon, chevronDownIcon } from '../../constants/icons';
 
 const MultiSelect = ({
     goUp = true,
     oldSelectedOptions = [],
-    options = [
-        { label: 'test', value: 1 },
-        { label: 'test2', value: 2 },
-        { label: 'test3', value: 3 },
-        { label: 'test4', value: 4 }
-    ],
+    options = [],
     title = 'Select ..',
     setIsMultiSelectOpen,
     isMultiSelectOpen,
-    customOnChange = () => null
+    customOnChange = () => null,
+    setData,
+    objKey = ''
 }) => {
-    const fakeOpts = [
-        { label: 'test', value: 1 },
-        { label: 'test2', value: 2 },
-        { label: 'test3', value: 3 },
-        { label: 'test4', value: 4 },
-        { label: 'test5', value: 5 },
-        { label: 'test6', value: 6 },
-        { label: 'test7', value: 7 },
-        { label: 'test8', value: 8 },
-        { label: 'test9', value: 9 }
-    ];
+
     const [selectedOptions, setSelectedOptions] = useState(oldSelectedOptions);
+
+    console.log('selectedOptions' , selectedOptions);
+    
 
     function handleCheck(option) {
         setSelectedOptions(old =>
-            old.some(el => el.value === option.value)
-                ? old.filter(el => el.value !== option.value)
+            old.some(el => el.id === option.id)
+                ? old.filter(el => el.id !== option.id)
                 : [...old, option]
         );
     }
 
+    useEffect(() => {
+        setData(old=>({...old,[objKey] : selectedOptions?.map(el=>el.id)}))
+    }, [selectedOptions]);
+
     const isSelected = function (opt) {
-        return selectedOptions.some(el => el.value === opt.value);
+        return selectedOptions.some(el => el.id === opt.id);
     };
 
     const selectedToText =
         selectedOptions.length > 0 &&
         selectedOptions
-            .map(el => el.label)
+            .map(el => el.name)
             .join(' , ')
             .slice(0, 30) + ' ...';
 
@@ -75,7 +69,7 @@ const MultiSelect = ({
                             Choose ...
                         </Text>
                         <View className="flex flex-col gap-2">
-                            {fakeOpts.map(el => (
+                            {options.map(el => (
                                 <Pressable
                                     onPress={() => handleCheck(el)}
                                     className={`border flex items-center justify-between flex-row ${
@@ -83,10 +77,10 @@ const MultiSelect = ({
                                             ? 'border-green-500'
                                             : 'border-gray-300 '
                                     } px-3 rounded-lg`}
-                                    key={el.value}
+                                    key={el.id}
                                 >
                                     <Text className="py-3 font-montserrat-r">
-                                        {el.label}
+                                        {el.name}
                                     </Text>
                                     {isSelected(el) && checkIcon(24, 'green')}
                                 </Pressable>
