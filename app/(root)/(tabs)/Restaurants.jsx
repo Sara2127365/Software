@@ -24,9 +24,9 @@ const Restaurants = () => {
     const ratingButtonRef = useRef();
     const router = useRouter();
 
-    const getRestaurants = async () => {
+    const getServiceUsers = async () => {
         try {
-            const resSnapshot = await getDocs(collection(db, "restaurants"));
+            const resSnapshot = await getDocs(collection(db, "service-users"));
             const data = resSnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data(),
@@ -39,7 +39,7 @@ const Restaurants = () => {
     };
 
     useEffect(() => {
-        getRestaurants();
+        getServiceUsers();
     }, []);
 
     useEffect(() => {
@@ -47,20 +47,27 @@ const Restaurants = () => {
 
         if (searchText) {
             filtered = filtered.filter(item =>
-               item.name.toLowerCase().startsWith(searchText.toLowerCase())
+                item.serviceName?.toLowerCase().includes(searchText.toLowerCase())
             );
         }
 
         if (selectedTag) {
             filtered = filtered.filter(item =>
-                item.tags.includes(selectedTag)
+                Array.isArray(item.categories) &&
+                item.categories.some(tag =>
+                    typeof tag === 'string'
+                        ? tag.toLowerCase() === selectedTag.toLowerCase()
+                        : tag.label?.toLowerCase() === selectedTag.toLowerCase()
+                )
             );
         }
 
+
         if (selectedRating) {
             filtered = filtered.filter(item =>
-                parseFloat(item.rating) >= selectedRating
+                item.rating && parseFloat(item.rating) >= selectedRating
             );
+
         }
 
         setFilteredData(filtered);
@@ -84,12 +91,40 @@ const Restaurants = () => {
             </View>
 
             <View style={styles.filterContainer}>
-                <TouchableOpacity style={styles.filterButton} onPress={() => setSelectedTag('food')}>
-                    <Text style={styles.filterText}>Food</Text>
+                <TouchableOpacity
+                    style={[
+                        styles.filterButton,
+                        selectedTag === 'food' && styles.activeFilterButton
+                    ]}
+                    onPress={() => setSelectedTag('food')}
+                >
+                    <Text
+                        style={[
+                            styles.filterText,
+                            selectedTag === 'food' && styles.activeFilterText
+                        ]}
+                    >
+                        Food
+                    </Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.filterButton} onPress={() => setSelectedTag('drinks')}>
-                    <Text style={styles.filterText}>Drinks</Text>
+
+                <TouchableOpacity
+                    style={[
+                        styles.filterButton,
+                        selectedTag === 'drinks' && styles.activeFilterButton
+                    ]}
+                    onPress={() => setSelectedTag('drinks')}
+                >
+                    <Text
+                        style={[
+                            styles.filterText,
+                            selectedTag === 'drinks' && styles.activeFilterText
+                        ]}
+                    >
+                        Drinks
+                    </Text>
                 </TouchableOpacity>
+
                 <TouchableOpacity
                     ref={ratingButtonRef}
                     style={styles.filterButton}
@@ -131,7 +166,7 @@ const Restaurants = () => {
                 data={filteredData}
                 keyExtractor={item => item.id}
                 renderItem={({ item }) => (
-                    <TouchableOpacity style={styles.card}onPress={() => router.push(`/restaurant/${item.id}`)}>
+                    <TouchableOpacity style={styles.card} onPress={() => router.push(`/restaurant/${item.id}`)}>
 
                         <Image
                             source={{ uri: item.image }}
@@ -141,17 +176,19 @@ const Restaurants = () => {
 
                         <View style={styles.cardContent}>
                             <View style={styles.cardHeader}>
-                                <Text style={styles.cardTitle}>{item.name}</Text>
-                                <Text style={styles.cardRating}>{item.rating} ★</Text>
+                                <Text style={styles.cardTitle}>{item.serviceName}</Text>
+                                <Text style={styles.cardRating}>{item.rating ? `${item.rating} ★` : '—'}</Text>
                             </View>
-                            <Text style={styles.cardDescription}>{item.description}</Text>
+                            <Text style={styles.cardDescription}>{item.info}</Text>
                             <View style={styles.tagsContainer}>
-                                {item.tags.map((tag, index) => (
-                                    <View key={index} style={styles.tag}>
-                                        <Text style={styles.tagText}>{tag}</Text>
-                                    </View>
-                                ))}
+                                {Array.isArray(item.categories) &&
+                                    item.categories.map((tag, index) => (
+                                        <View key={index} style={styles.tag}>
+                                            <Text style={styles.tagText}>{typeof tag === 'object' ? tag.label : String(tag)}</Text>
+                                        </View>
+                                    ))}
                             </View>
+
                         </View>
                     </TouchableOpacity>
                 )}
@@ -159,7 +196,7 @@ const Restaurants = () => {
                 ListEmptyComponent={
                     <View style={{ alignItems: 'center', marginTop: 40 }}>
                         <Text style={{ fontSize: 16, color: '#000' }}>
-                             No matching results found
+                            No matching results found
                         </Text>
                     </View>
                 }
@@ -171,18 +208,19 @@ const Restaurants = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff', 
+        backgroundColor: '#fff',
         padding: 16
     },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center', 
+        alignItems: 'center',
         marginBottom: 20
     },
-    welcomeText: { 
-        fontSize: 18, 
-        color: '#333' },
+    welcomeText: {
+        fontSize: 18,
+        color: '#333'
+    },
     appName: {
         fontSize: 20,
         fontWeight: 'bold',
@@ -201,7 +239,7 @@ const styles = StyleSheet.create({
     },
     filterContainer: {
         flexDirection: 'row',
-        marginBottom: 16, 
+        marginBottom: 16,
         flexWrap: 'wrap'
     },
     filterButton: {
@@ -209,12 +247,12 @@ const styles = StyleSheet.create({
         paddingVertical: 6,
         paddingHorizontal: 12,
         backgroundColor: '#f0f0f0',
-        borderRadius: 16, 
+        borderRadius: 16,
         marginBottom: 8
     },
-    filterText: { 
-        color: '#CC4C4C', 
-        fontSize: 14 
+    filterText: {
+        color: '#CC4C4C',
+        fontSize: 14
     },
     ratingOptions: {
         position: 'absolute',
@@ -228,27 +266,27 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.2,
         shadowRadius: 4,
     },
-    listContent: { 
-        paddingBottom: 20  
+    listContent: {
+        paddingBottom: 20
     },
     card: {
         backgroundColor: '#f9f9f9',
         borderRadius: 8,
         padding: 12,
         marginBottom: 12,
-        flexDirection: 'row', 
+        flexDirection: 'row',
         alignItems: 'center',
-    },    
+    },
     cardImage: {
         width: 80,
         height: 80,
         borderRadius: 8,
         marginRight: 12,
-    },    
+    },
     cardContent: {
         flex: 1,
         justifyContent: 'center',
-    },    
+    },
     cardHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -264,7 +302,7 @@ const styles = StyleSheet.create({
     },
     cardDescription: {
         fontSize: 14,
-        color: '#666', 
+        color: '#666',
         marginBottom: 12
     },
     tagsContainer: {
@@ -274,15 +312,22 @@ const styles = StyleSheet.create({
     tag: {
         backgroundColor: '#FF6969',
         borderRadius: 12,
-        paddingVertical: 4, 
+        paddingVertical: 4,
         paddingHorizontal: 10,
-        marginRight: 8, 
+        marginRight: 8,
         marginBottom: 8
     },
     tagText: {
-        fontSize: 12, 
+        fontSize: 12,
         color: 'black'
     },
+    activeFilterButton: {
+        backgroundColor: '#CC4C4C',
+    },
+    activeFilterText: {
+        color: '#fff',
+    },
+
 });
 
 export default Restaurants;

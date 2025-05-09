@@ -332,18 +332,18 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         color: '#333'
     },
-    footer: {
+     footer: {
         marginTop: 16,
-        padding: 16,
-        backgroundColor: '#FF6969',
-        borderRadius: 10
+        alignItems: 'center'
     },
     knowMoreButton: {
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        backgroundColor: '#FFCB2D',
-        borderRadius: 20,
-        alignSelf: 'center'
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+        borderWidth: 1,
+        borderColor: '#FF6B6B',
+        backgroundColor: '#FF6969',
+        borderRadius: 24,
+        marginBottom: 80
     },
     knowMoreText: {
         fontSize: 14,

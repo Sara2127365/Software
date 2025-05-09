@@ -25,29 +25,40 @@ const RestaurantDetails = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const docRef = doc(db, 'restaurants', id);
+        const docRef = doc(db, 'service-users', id);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const restaurantData = docSnap.data();
           setRestaurant(restaurantData);
-          const tags = Array.isArray(restaurantData.tags) ? restaurantData.tags : [];
-          setCategories(['top selling', ...tags]);
+
+          const rawCategories = Array.isArray(restaurantData.categories) ? restaurantData.categories : [];
+          const formattedCategories = rawCategories.map((cat) => cat.toLowerCase());
+          setCategories(['top selling', ...formattedCategories]);
         }
       } catch (error) {
         console.error('Error fetching restaurant:', error);
       }
     };
-
-    const fetchProducts = async () => {
+  const fetchProducts = async () => {
       try {
-        const q = query(collection(db, 'products'), where('restaurantId', '==', Number(id)));
-        const querySnapshot = await getDocs(q);
-        const fetchedProducts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        setProducts(fetchedProducts);
+        const docRef = doc(db, 'service-users', id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const productsFromDoc = Array.isArray(data.products) ? data.products : [];
+          const productsWithIds = productsFromDoc.map((prod, index) => ({
+            id: `local-${index}`,
+            ...prod,
+          }));
+          setProducts(productsWithIds);
+        } else {
+          console.warn('No such restaurant document!');
+        }
       } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error('Error fetching products from service-users:', error);
       }
     };
+
     const loadReviews = async () => {
       try {
         const q = query(collection(db, 'reviews'), where('restaurantId', '==', id));
@@ -182,10 +193,10 @@ const RestaurantDetails = () => {
       </View>
 
       <View style={styles.subHeader}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => router.push('(tabs)/Restaurants')}>
           <Text style={styles.backArrow}>{'←'}</Text>
         </TouchableOpacity>
-        <Text style={styles.pageTitle}>{restaurant.name}</Text>
+        <Text style={styles.pageTitle}>{restaurant?.serviceName}</Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -196,10 +207,10 @@ const RestaurantDetails = () => {
             <Text style={styles.ratingText}>{restaurant.rating} ★</Text>
           </View>
         </View>
-        <View style={styles.logoCircle}>
+        <View style={[styles.logoCircle, { alignSelf: 'flex-start', marginLeft: 16 }]}>
           <Image source={{ uri: restaurant.logoImage }} style={styles.logoImage} resizeMode="contain" />
         </View>
-        <Text style={styles.restaurantName}>{restaurant.name}</Text>
+        <Text style={styles.restaurantName}>{restaurant?.serviceName}</Text>
       </View>
 
       <View style={styles.categoriesContainer}>
@@ -398,7 +409,7 @@ const styles = StyleSheet.create({
   ratingText: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#FFA500',
   },
   logoCircle: {
     position: 'absolute',
