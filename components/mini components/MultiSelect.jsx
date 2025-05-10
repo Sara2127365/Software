@@ -43,19 +43,13 @@ const MultiSelect = ({
         if (isSingle) {
             // For single selection, send either the single value or null
             const value =
-                selectedOptions.length > 0
-                    ? nameNoId
-                        ? selectedOptions[0].name
-                        : selectedOptions[0].id
-                    : null;
+                selectedOptions.length > 0 ? selectedOptions[0].name : null;
             setData(old => ({ ...old, [objKey]: value }));
         } else {
             // For multi-selection, send the array as before
             setData(old => ({
                 ...old,
-                [objKey]: selectedOptions?.map(el =>
-                    nameNoId ? el.name : el.id
-                )
+                [objKey]: selectedOptions?.map(el => el.name)
             }));
         }
     }, [selectedOptions]);

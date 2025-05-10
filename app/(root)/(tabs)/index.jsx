@@ -22,6 +22,7 @@ const HomeScreen = () => {
     const router = useRouter();
     const [topRestaurants, setTopRestaurants] = useState([]);
     const [topOffers, setTopOffers] = useState([]);
+    const [role, setRole] = useState(null);
     const { cartItems, addToCart, removeFromCart } = useCart(); // Access cartItems and cart methods
 
     useEffect(() => {
@@ -46,6 +47,10 @@ const HomeScreen = () => {
                 // Setting the state with the fetched data
                 setTopRestaurants(restaurantsData);
                 setTopOffers(offersData);
+
+                // Get user role from AsyncStorage
+                const userRole = await AsyncStorage.getItem('role');
+                setRole(userRole);
             } catch (error) {
                 console.error('Error fetching data: ', error);
                 Alert.alert('Error', 'Failed to fetch data');
@@ -68,6 +73,19 @@ const HomeScreen = () => {
         }
     }
 
+    // If role is 'service', render Dashboard tab
+    if (role === 'service') {
+        return (
+            <View style={styles.container}>
+                <Text>Dashboard Content for Service Providers</Text>
+                <TouchableOpacity onPress={signout}>
+                    <Text style={styles.appName}>Log out</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
+
+    // Original return for non-service users
     return (
         <ScrollView style={styles.container}>
             <View style={styles.header}>

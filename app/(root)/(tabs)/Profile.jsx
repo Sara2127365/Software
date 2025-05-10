@@ -10,7 +10,8 @@ import {
     TouchableOpacity,
     Pressable,
     Alert,
-    ScrollView
+    ScrollView,
+    ActivityIndicator
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Loading from '../../../components/onboarding/Loading';
@@ -114,6 +115,7 @@ export default function Profile() {
             setLoading(false);
         }
     };
+console.log('restaurantData',restaurantData);
 
     const handleChange = (field, text) => {
         setRestaurantData(prev => ({

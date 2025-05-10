@@ -52,7 +52,6 @@ const _layout = () => {
                 options={{
                     headerShown: false,
                     title: 'Home',
-                    href: is_service ? null : '/', // Changed from undefined to '/'
                     tabBarIcon: ({ focused }) => (
                         <TabIcon
                             focused={focused}

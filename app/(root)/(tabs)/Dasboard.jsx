@@ -277,7 +277,7 @@ const Dashboard = () => {
                                     {product.name}
                                 </Text>
                                 <Text className="text-main-rose">
-                                    ${product?.price.toFixed(2)}
+                                    EGP {product?.price.toFixed(2)}
                                 </Text>
 
                                 <TouchableOpacity

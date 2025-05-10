@@ -10,8 +10,9 @@ import {
     ActivityIndicator // Loading spinner
 } from 'react-native';
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../../../utils/firebase/config';
+import { db, storage } from '../../../utils/firebase/config';
 import { useRouter } from 'expo-router';
+import { getDownloadURL, ref } from 'firebase/storage';
 
 const Restaurants = () => {
     const [restaurants, setRestaurants] = useState([]);
@@ -30,19 +31,51 @@ const Restaurants = () => {
     const ratingButtonRef = useRef();
     const router = useRouter();
 
+
     const getServiceUsers = async () => {
         try {
-            setLoading(true); // Set loading to true while fetching
+            setLoading(true);
             const resSnapshot = await getDocs(collection(db, 'service-users'));
-            const data = resSnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
+            const data = await Promise.all(
+                resSnapshot.docs.map(async doc => {
+                    const docId = doc.id;
+                    console.log('docId' , docId);
+                    
+                    const docData = doc.data();
+
+                    let logoURL = '';
+                    let coverURL = '';
+
+                    try {
+                        logoURL = await getDownloadURL(
+                            ref(storage, `services/logos/${docId}`)
+                        );
+                    } catch (error) {
+                        console.warn(`No logo found for ${docId}`, error);
+                    }
+
+                    // try {
+                    //     coverURL = await getDownloadURL(
+                    //         ref(storage, `services/covers/${docId}`)
+                    //     );
+                    // } catch (error) {
+                    //     console.warn(`No cover found for ${docId}`, error);
+                    // }
+
+                    return {
+                        id: docId,
+                        ...docData,
+                        logoURL,
+                        coverURL
+                    };
+                })
+            );
+
             setRestaurants(data);
             setFilteredData(data);
-            setLoading(false); // Set loading to false once data is fetched
+            setLoading(false);
         } catch (err) {
-            setLoading(false); // Set loading to false if there’s an error
+            setLoading(false);
             setError('Error fetching data. Please try again later.');
             console.error('Error fetching data:', err);
         }
@@ -51,6 +84,9 @@ const Restaurants = () => {
     useEffect(() => {
         getServiceUsers();
     }, []);
+
+    console.log('restaurants' , restaurants[11]);
+    
 
     useEffect(() => {
         let filtered = [...restaurants];
@@ -213,7 +249,7 @@ const Restaurants = () => {
                             }
                         >
                             <Image
-                                source={{ uri: item.image }}
+                                source={{ uri: item.logoURL }}
                                 style={styles.cardImage}
                                 resizeMode="cover"
                             />
