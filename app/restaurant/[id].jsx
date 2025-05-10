@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, ScrollView, TextInput } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { doc, getDoc, collection, query, where, getDocs,setDoc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db, auth } from '../../utils/firebase/config'; 
+import { doc, getDoc, collection, query, where, getDocs, setDoc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { db, auth } from '../../utils/firebase/config';
 import FlipCard from 'react-native-flip-card';
 import StarRating, { Rating } from 'react-native-ratings';
 import { AirbnbRating } from 'react-native-ratings';
@@ -14,7 +14,7 @@ const RestaurantDetails = () => {
   const [restaurant, setRestaurant] = useState(null);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState(['top selling']);
-  const [selectedCategory, setSelectedCategory] = useState('top selling');
+  const [selectedCategories, setSelectedCategories] = useState('top selling');
   const [productQuantities, setProductQuantities] = useState({});
   const [reviews, setReviews] = useState([]);
   const [reviewText, setReviewText] = useState('');
@@ -39,25 +39,22 @@ const RestaurantDetails = () => {
         console.error('Error fetching restaurant:', error);
       }
     };
-  const fetchProducts = async () => {
+    const fetchProducts = async () => {
       try {
-        const docRef = doc(db, 'service-users', id);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          const productsFromDoc = Array.isArray(data.products) ? data.products : [];
-          const productsWithIds = productsFromDoc.map((prod, index) => ({
-            id: `local-${index}`,
-            ...prod,
-          }));
-          setProducts(productsWithIds);
-        } else {
-          console.warn('No such restaurant document!');
-        }
+        const q = query(collection(db, 'food'), where('uid', '==', id));
+        const snapshot = await getDocs(q);
+
+        const fetchedProducts = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        setProducts(fetchedProducts);
       } catch (error) {
-        console.error('Error fetching products from service-users:', error);
+        console.error('Error fetching products from food collection:', error);
       }
     };
+
 
     const loadReviews = async () => {
       try {
@@ -75,7 +72,7 @@ const RestaurantDetails = () => {
       loadReviews();
     }
   }, [id]);
-  
+
 
   const calculateAverageRating = () => {
     if (reviews.length === 0) return "No Rating";
@@ -85,7 +82,7 @@ const RestaurantDetails = () => {
 
   const handleAddReview = async () => {
     if (!auth.currentUser) return alert("يجب تسجيل الدخول لإضافة مراجعة!");
-    
+
     try {
       await addDoc(collection(db, "reviews"), {
         restaurantId: id,
@@ -128,7 +125,7 @@ const RestaurantDetails = () => {
       console.error("خطأ أثناء حذف المراجعة:", error);
     }
   };
-  
+
 
   useEffect(() => {
     const total = Object.values(productQuantities).reduce((sum, qty) => sum + qty, 0);
@@ -155,11 +152,14 @@ const RestaurantDetails = () => {
   };
 
   const filteredProducts =
-    selectedCategory === 'top selling'
+    selectedCategories === 'top selling'
       ? products
-      : products.filter(
-          (prod) => prod.category?.toLowerCase() === selectedCategory.toLowerCase()
-        );
+      : products.filter((prod) => {
+        if (typeof prod.categories === 'string') {
+          return prod.categories.toLowerCase() === selectedCategories.toLowerCase();
+        }
+        return false;
+      });
 
   const toggleFlip = (productId) => {
     setFlippedStates((prev) => ({
@@ -217,13 +217,13 @@ const RestaurantDetails = () => {
         {categories.map((cat) => (
           <TouchableOpacity
             key={cat}
-            onPress={() => setSelectedCategory(cat)}
+            onPress={() => setSelectedCategories(cat)}
             style={[
-              styles.categoryButton,
-              selectedCategory === cat && styles.selectedCategoryButton,
+              styles.categoriesButton,
+              selectedCategories === cat && styles.selectedCategoriesButton,
             ]}
           >
-            <Text style={styles.categoryText}>{cat}</Text>
+            <Text style={styles.categoriesText}>{cat}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -241,7 +241,7 @@ const RestaurantDetails = () => {
             >
               {/* Front View */}
               <View style={styles.cardFront}>
-                <Image source={{ uri: item.image }} style={styles.productImage} />
+                <Image source={{ uri: item.url }} style={styles.productImage} />
                 <Text style={styles.productName}>{item.name}</Text>
                 <Text style={styles.productPrice}>{item.price} EGP</Text>
               </View>
@@ -293,7 +293,7 @@ const RestaurantDetails = () => {
           <View style={styles.reviewCard}>
             <Text style={styles.reviewRating}>⭐ {item.rating}</Text>
             <Text style={styles.reviewText}>{item.reviewText}</Text>
-             {item.userId === auth.currentUser?.uid && (
+            {item.userId === auth.currentUser?.uid && (
               <>
                 <TouchableOpacity onPress={() => handleUpdateReview(item.id, "Edited", 4)} style={styles.editButton}>
                   <Text style={styles.editButtonText}>✏️ Edit</Text>
@@ -305,7 +305,7 @@ const RestaurantDetails = () => {
               </>
             )}
 
-            
+
           </View>
         )}
       />
@@ -313,11 +313,11 @@ const RestaurantDetails = () => {
       <View style={styles.reviewInputContainer}>
         <Text style={styles.label}>Rating:</Text>
         <AirbnbRating
-  count={5} // عدد النجوم المتاحة
-  defaultRating={rating} // التقييم الافتراضي
-  size={30} // حجم النجوم
-  onFinishRating={(newRating) => setRating(newRating)} // تحديث عند تغيير التقييم
-/>
+          count={5} // عدد النجوم المتاحة
+          defaultRating={rating} // التقييم الافتراضي
+          size={30} // حجم النجوم
+          onFinishRating={(newRating) => setRating(newRating)} // تحديث عند تغيير التقييم
+        />
 
         <Text style={styles.label}>write your review:</Text>
         <TextInput
@@ -440,17 +440,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 16,
   },
-  categoryButton: {
+  categoriesButton: {
     marginHorizontal: 8,
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 20,
     backgroundColor: '#f0f0f0',
   },
-  selectedCategoryButton: {
+  selectedCategoriesButton: {
     backgroundColor: '#ff9900',
   },
-  categoryText: {
+  categoriesText: {
     fontSize: 14,
     fontWeight: 'bold',
     color: '#333',
@@ -522,48 +522,51 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
   },
-  ratingText: { 
-    fontSize: 18, color: '#FFA500' 
+  ratingText: {
+    fontSize: 18, color: '#FFA500'
 
   },
-  reviewCard: { 
-    padding: 10, borderBottomWidth: 1 
+  reviewCard: {
+    padding: 10, borderBottomWidth: 1
 
   },
-  reviewRating: { 
-    fontWeight: 'bold', fontSize: 16, color: '#FFA500' 
+  reviewRating: {
+    fontWeight: 'bold', fontSize: 16, color: '#FFA500'
 
   },
-  reviewText: { 
-    fontSize: 14, color: '#333' 
+  reviewText: {
+    fontSize: 14, color: '#333'
 
   },
-  reviewInputContainer: { 
-    marginTop: 20, padding: 16, backgroundColor: '#f9f9f9', borderRadius: 8 
+  reviewInputContainer: {
+    marginTop: 20, padding: 16, backgroundColor: '#f9f9f9', borderRadius: 8
 
   },
-  label: { 
-    fontSize: 16, fontWeight: 'bold', marginBottom: 8 },
-  reviewInput: { 
-    borderWidth: 1, padding: 8, borderRadius: 8, marginBottom: 16 
+  label: {
+    fontSize: 16, fontWeight: 'bold', marginBottom: 8
+  },
+  reviewInput: {
+    borderWidth: 1, padding: 8, borderRadius: 8, marginBottom: 16
 
   },
-  reviewButton: { 
-    backgroundColor: 'rgb(255 105 105)', padding: 12, borderRadius: 8 
+  reviewButton: {
+    backgroundColor: 'rgb(255 105 105)', padding: 12, borderRadius: 8
 
   },
-  reviewButtonText: { 
-    color: 'black', textAlign: 'center', fontSize: 16, fontWeight: 'bold' 
+  reviewButtonText: {
+    color: 'black', textAlign: 'center', fontSize: 16, fontWeight: 'bold'
   },
-  editButton: { 
-    backgroundColor: '#FFA500', padding: 6, borderRadius: 4, marginTop: 4 },
-  editButtonText: { 
-    color: 'white', fontSize: 14, fontWeight: 'bold' 
+  editButton: {
+    backgroundColor: '#FFA500', padding: 6, borderRadius: 4, marginTop: 4
   },
-  deleteButton: { 
-    backgroundColor: 'rgb(255 105 105)', padding: 6, borderRadius: 4, marginTop: 4 
+  editButtonText: {
+    color: 'white', fontSize: 14, fontWeight: 'bold'
   },
-  deleteButtonText: { color: 'white', fontSize: 14, fontWeight: 'bold'
+  deleteButton: {
+    backgroundColor: 'rgb(255 105 105)', padding: 6, borderRadius: 4, marginTop: 4
+  },
+  deleteButtonText: {
+    color: 'white', fontSize: 14, fontWeight: 'bold'
   },
 });
 
