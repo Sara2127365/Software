@@ -222,6 +222,28 @@ const _layout = () => {
                     )
                 }}
             />
+
+            <Tabs.Screen
+                name="privacypolicy"
+                options={{
+                    headerShown: false,
+                    title: 'Dasboard',
+                    href: null,
+                    tabBarIcon: ({ focused }) => (
+                        <TabIcon
+                            focused={focused}
+                            Icon={
+                                <Icon
+                                    name="dashboard"
+                                    size={17}
+                                    color={focused ? '#CC4C4C' : '#FF6969'}
+                                />
+                            }
+                            title="Dasboard"
+                        />
+                    )
+                }}
+            />
         </Tabs>
     );
 };

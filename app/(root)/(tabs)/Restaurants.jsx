@@ -7,6 +7,7 @@ import {
     TextInput,
     TouchableOpacity,
     Image,
+    ActivityIndicator, // Loading spinner
 } from 'react-native';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../utils/firebase/config';
@@ -21,12 +22,15 @@ const Restaurants = () => {
     const [selectedRating, setSelectedRating] = useState(null);
     const [showRatingOptions, setShowRatingOptions] = useState(false);
     const [ratingButtonPosition, setRatingButtonPosition] = useState({ x: 0, y: 0 });
+    const [loading, setLoading] = useState(true); // Add loading state
+    const [error, setError] = useState(null); // Add error state
 
     const ratingButtonRef = useRef();
     const router = useRouter();
 
     const getServiceUsers = async () => {
         try {
+            setLoading(true); // Set loading to true while fetching
             const resSnapshot = await getDocs(collection(db, "service-users"));
             const data = resSnapshot.docs.map(doc => ({
                 id: doc.id,
@@ -34,7 +38,10 @@ const Restaurants = () => {
             }));
             setRestaurants(data);
             setFilteredData(data);
+            setLoading(false); // Set loading to false once data is fetched
         } catch (err) {
+            setLoading(false); // Set loading to false if there’s an error
+            setError('Error fetching data. Please try again later.');
             console.error("Error fetching data:", err);
         }
     };
@@ -89,7 +96,7 @@ const Restaurants = () => {
     }, [searchText, restaurants]);
 
     return (
-        <View style={styles.container}>
+        <View className='mb-10' style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.welcomeText}>Welcome, User</Text>
                 <Text style={styles.appName}>Toomiia</Text>
@@ -124,34 +131,22 @@ const Restaurants = () => {
 
             <View style={styles.filterContainer}>
                 <TouchableOpacity
-                    style={[
-                        styles.filterButton,
-                        selectedTag === 'food' && styles.activeFilterButton
-                    ]}
+                    style={[styles.filterButton, selectedTag === 'food' && styles.activeFilterButton]}
                     onPress={() => setSelectedTag('food')}
                 >
                     <Text
-                        style={[
-                            styles.filterText,
-                            selectedTag === 'food' && styles.activeFilterText
-                        ]}
+                        style={[styles.filterText, selectedTag === 'food' && styles.activeFilterText]}
                     >
                         Food
                     </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                    style={[
-                        styles.filterButton,
-                        selectedTag === 'drinks' && styles.activeFilterButton
-                    ]}
+                    style={[styles.filterButton, selectedTag === 'drinks' && styles.activeFilterButton]}
                     onPress={() => setSelectedTag('drinks')}
                 >
                     <Text
-                        style={[
-                            styles.filterText,
-                            selectedTag === 'drinks' && styles.activeFilterText
-                        ]}
+                        style={[styles.filterText, selectedTag === 'drinks' && styles.activeFilterText]}
                     >
                         Drinks
                     </Text>
@@ -195,42 +190,53 @@ const Restaurants = () => {
                 </View>
             )}
 
-            <FlatList
-                data={filteredData}
-                keyExtractor={item => item.id}
-                renderItem={({ item }) => (
-                    <TouchableOpacity style={styles.card} onPress={() => router.push(`/restaurant/${item.id}`)}>
-                        <Image
-                            source={{ uri: item.image }}
-                            style={styles.cardImage}
-                            resizeMode="cover"
-                        />
-                        <View style={styles.cardContent}>
-                            <View style={styles.cardHeader}>
-                                <Text style={styles.cardTitle}>{item.serviceName}</Text>
-                                <Text style={styles.cardRating}>{item.rating ? `${item.rating} ★` : '—'}</Text>
+            {loading ? (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#CC4C4C" />
+                    <Text>Loading restaurants...</Text>
+                </View>
+            ) : error ? (
+                <View style={styles.errorContainer}>
+                    <Text style={styles.errorText}>{error}</Text>
+                </View>
+            ) : (
+                <FlatList
+                    data={filteredData}
+                    keyExtractor={item => item.id}
+                    renderItem={({ item }) => (
+                        <TouchableOpacity style={styles.card} onPress={() => router.push(`/restaurant/${item.id}`)}>
+                            <Image
+                                source={{ uri: item.image }}
+                                style={styles.cardImage}
+                                resizeMode="cover"
+                            />
+                            <View style={styles.cardContent}>
+                                <View style={styles.cardHeader}>
+                                    <Text style={styles.cardTitle}>{item.serviceName}</Text>
+                                    <Text style={styles.cardRating}>{item.rating ? `${item.rating} ★` : '—'}</Text>
+                                </View>
+                                <Text style={styles.cardDescription}>{item.info}</Text>
+                                <View style={styles.tagsContainer}>
+                                    {Array.isArray(item.categories) &&
+                                        item.categories.map((tag, index) => (
+                                            <View key={index} style={styles.tag}>
+                                                <Text style={styles.tagText}>{typeof tag === 'object' ? tag.label : String(tag)}</Text>
+                                            </View>
+                                        ))}
+                                </View>
                             </View>
-                            <Text style={styles.cardDescription}>{item.info}</Text>
-                            <View style={styles.tagsContainer}>
-                                {Array.isArray(item.categories) &&
-                                    item.categories.map((tag, index) => (
-                                        <View key={index} style={styles.tag}>
-                                            <Text style={styles.tagText}>{typeof tag === 'object' ? tag.label : String(tag)}</Text>
-                                        </View>
-                                    ))}
-                            </View>
+                        </TouchableOpacity>
+                    )}
+                    contentContainerStyle={styles.listContent}
+                    ListEmptyComponent={
+                        <View style={{ alignItems: 'center', marginTop: 40 }}>
+                            <Text style={{ fontSize: 16, color: '#000' }}>
+                                No matching results found
+                            </Text>
                         </View>
-                    </TouchableOpacity>
-                )}
-                contentContainerStyle={styles.listContent}
-                ListEmptyComponent={
-                    <View style={{ alignItems: 'center', marginTop: 40 }}>
-                        <Text style={{ fontSize: 16, color: '#000' }}>
-                            No matching results found
-                        </Text>
-                    </View>
-                }
-            />
+                    }
+                />
+            )}
         </View>
     );
 };
@@ -370,13 +376,21 @@ const styles = StyleSheet.create({
     },
     tagText: {
         fontSize: 12,
-        color: 'black'
+        color: '#fff'
     },
-    activeFilterButton: {
-        backgroundColor: '#CC4C4C',
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
-    activeFilterText: {
-        color: '#fff',
+    errorContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    errorText: {
+        color: '#FF0000',
+        fontSize: 16,
     },
 });
 

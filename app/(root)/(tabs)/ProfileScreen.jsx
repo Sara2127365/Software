@@ -11,7 +11,7 @@ export default function ProfileScreen() {
     email: '',
     phoneNumber: '',
     faculty: '',
-    type: '',
+    state: '',
     photoURL: '',
   });
 
@@ -28,6 +28,9 @@ export default function ProfileScreen() {
       try {
         const docRef = doc(db, 'users', user.uid);
         const docSnap = await getDoc(docRef);
+
+        console.log('docSnap',docSnap.data());
+        
 
         let photoURL = '';
         if (docSnap.exists()) {
@@ -74,7 +77,7 @@ export default function ProfileScreen() {
         name: userData.name,
         phoneNumber: userData.phoneNumber,
         faculty: userData.faculty,
-        type: userData.type,
+        state: userData.state,
       });
       Alert.alert('Success', 'Profile updated successfully!');
       setIsEditing(false);
@@ -165,9 +168,9 @@ export default function ProfileScreen() {
         />
         <LabelInput
           label="You are"
-          value={userData.type}
+          value={userData.state}
           editable={isEditing}
-          onChangeText={text => setUserData({ ...userData, type: text })}
+          onChangeText={text => setUserData({ ...userData, state: text })}
         />
       </View>
     </ScrollView>

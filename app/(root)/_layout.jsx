@@ -35,7 +35,7 @@ export default function RootLayout() {
     }
 
     if (!hasUid) {
-        return <Redirect href="/LoginPage" />;
+        return <Redirect href="/onBoarding" />;
     }
 
     return (

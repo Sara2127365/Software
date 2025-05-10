@@ -163,7 +163,7 @@ const Dashboard = () => {
 
     function logOut() {
         handleLogout()
-        router.replace('/LoginPage')
+        router.replace('/onBoarding')
     }
 
     return (

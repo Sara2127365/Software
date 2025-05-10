@@ -15,20 +15,22 @@ import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { db } from '../../../utils/firebase/config';
 import { collection, getDocs } from 'firebase/firestore';
-import { useCart } from '../../context/cartcontext';  // Ensure the path to CartContext is correct
+import { useCart } from '../../context/cartcontext'; // Ensure the path to CartContext is correct
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const HomeScreen = () => {
     const router = useRouter();
     const [topRestaurants, setTopRestaurants] = useState([]);
     const [topOffers, setTopOffers] = useState([]);
-    const { cartItems, addToCart, removeFromCart } = useCart();  // Access cartItems and cart methods
+    const { cartItems, addToCart, removeFromCart } = useCart(); // Access cartItems and cart methods
 
     useEffect(() => {
         async function fetchData() {
             try {
                 // Fetching data from Firestore
-                const restaurantsSnap = await getDocs(collection(db, 'restaurants'));
+                const restaurantsSnap = await getDocs(
+                    collection(db, 'restaurants')
+                );
                 const offersSnap = await getDocs(collection(db, 'offers'));
 
                 // Mapping the fetched data to an array of objects
@@ -56,7 +58,7 @@ const HomeScreen = () => {
     // Function for logout
     async function signout() {
         try {
-            const res = await handleLogout();  // Ensure handleLogout works correctly
+            const res = await handleLogout(); // Ensure handleLogout works correctly
             if (res) {
                 router.replace('/onBoarding');
             }
@@ -81,25 +83,20 @@ const HomeScreen = () => {
                 end={{ x: 1, y: 1 }}
                 style={styles.heroSection}
             >
-                <View style={styles.bgImageContainer}>
-                    <Image
-                        source={require('../../../assets/images/foodImg.png')}
-                        resizeMode="contain"
-                        style={styles.bgImage}
-                    />
-                </View>
-
                 <View style={styles.heroContent}>
                     <Text style={styles.heroTitle}>Welcome to Toomiia!</Text>
                     <Text style={styles.heroSubtitle}>
-                        Let's make food on campus easier than ever. Start ordering now!
+                        Let's make food on campus easier than ever. Start
+                        ordering now!
                     </Text>
                     <View style={styles.exploreButtonContainer}>
                         <TouchableOpacity
                             style={styles.exploreButton}
                             onPress={() => router.push('/Restaurants')}
                         >
-                            <Text style={styles.exploreButtonText}>Explore Restaurants →</Text>
+                            <Text style={styles.exploreButtonText}>
+                                Explore Restaurants →
+                            </Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -113,15 +110,27 @@ const HomeScreen = () => {
                     end={{ x: 1, y: 0 }}
                     style={styles.sectionHeader}
                 >
-                    <Text style={styles.sectionHeaderText}>Top Restaurants</Text>
-                    <TouchableOpacity onPress={() => router.push('/Restaurants')}>
+                    <Text style={styles.sectionHeaderText}>
+                        Top Restaurants
+                    </Text>
+                    <TouchableOpacity
+                        onPress={() => router.push('/Restaurants')}
+                    >
                         <Text style={styles.viewMoreText}>View More →</Text>
                     </TouchableOpacity>
                 </LinearGradient>
 
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.horizontalScroll}
+                >
                     {topRestaurants.slice(0, 3).map(item => (
-                        <TouchableOpacity key={item.id} style={styles.itemCard} onPress={() => addToCart(item)}>
+                        <TouchableOpacity
+                            key={item.id}
+                            style={styles.itemCard}
+                            onPress={() => addToCart(item)}
+                        >
                             <Image
                                 source={{ uri: item.image }}
                                 style={styles.itemImage}
@@ -147,16 +156,26 @@ const HomeScreen = () => {
                     </TouchableOpacity>
                 </LinearGradient>
 
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.horizontalScroll}
+                >
                     {topOffers.slice(0, 3).map(item => (
-                        <TouchableOpacity key={item.id} style={styles.itemCard} onPress={() => addToCart(item)}>
+                        <TouchableOpacity
+                            key={item.id}
+                            style={styles.itemCard}
+                            onPress={() => addToCart(item)}
+                        >
                             <Image
                                 source={{ uri: item.image }}
                                 style={styles.itemImage}
                                 resizeMode="cover"
                             />
                             <View style={styles.offerBadge}>
-                                <Text style={styles.offerText}>{item.name}</Text>
+                                <Text style={styles.offerText}>
+                                    {item.name}
+                                </Text>
                             </View>
                             <Text style={styles.itemOffer}>{item.offer}</Text>
                         </TouchableOpacity>
@@ -178,7 +197,10 @@ const HomeScreen = () => {
 
             {/* Footer */}
             <View style={styles.footer}>
-                <TouchableOpacity style={styles.knowMoreButton} onPress={() => router.push('/About')}>
+                <TouchableOpacity
+                    style={styles.knowMoreButton}
+                    onPress={() => router.push('/About')}
+                >
                     <Text style={styles.knowMoreText}>Know more about us</Text>
                 </TouchableOpacity>
             </View>
@@ -333,7 +355,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         color: '#333'
     },
-     footer: {
+    footer: {
         marginTop: 16,
         alignItems: 'center'
     },

@@ -8,10 +8,11 @@ import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginPage = () => {
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
     const [formData, setFormData] = useState({
-        email: 'B@a.com',
-        password: '123456'
+        email: '',
+        password: ''
     });
 
     function handleChange(value, id) {
@@ -19,13 +20,15 @@ const LoginPage = () => {
     }
 
     async function handleSubmit() {
+        setLoading(true);
         const result = await handleLogin(formData);
         if (result) {
-            console.log('IM HEREEEEEEEEEEEE',result);
+            console.log('IM HEREEEEEEEEEEEE', result);
             AsyncStorage.setItem('role', result.is_service ? 'true' : 'false');
             AsyncStorage.setItem('status', 'true');
             router.replace(result.is_service ? '/Profile' : '/');
         }
+        setLoading(false);
     }
 
     return (
@@ -52,6 +55,7 @@ const LoginPage = () => {
                         icon={passwordIcon()}
                     />
                     <LargeBtn
+                        loading={loading}
                         onPress={handleSubmit}
                         text="Login"
                         classes="py-4 mt-4 w-full bg-main-rose rounded-xl"
