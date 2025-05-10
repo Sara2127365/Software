@@ -24,9 +24,9 @@ import {
 } from 'firebase/firestore';
 import { db, auth, storage } from '../../utils/firebase/config';
 import FlipCard from 'react-native-flip-card';
-import StarRating, { Rating } from 'react-native-ratings';
 import { AirbnbRating } from 'react-native-ratings';
 import { getDownloadURL, ref } from 'firebase/storage';
+
 
 const RestaurantDetails = () => {
     console.log('sssssssss');
@@ -46,6 +46,7 @@ const RestaurantDetails = () => {
     const [rating, setRating] = useState(5);
     const [totalItems, setTotalItems] = useState(0);
     const [flippedStates, setFlippedStates] = useState({});
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -141,7 +142,7 @@ const RestaurantDetails = () => {
         }
     }, [id]);
 
-    const calculateAverageRating = () => {
+     const calculateAverageRating = () => {
         if (reviews.length === 0) return 'No Rating';
         const totalRating = reviews.reduce(
             (sum, review) => sum + review.rating,
@@ -149,6 +150,7 @@ const RestaurantDetails = () => {
         );
         return (totalRating / reviews.length).toFixed(1);
     };
+    
 
     const handleAddReview = async () => {
         if (!auth.currentUser) return alert('يجب تسجيل الدخول لإضافة مراجعة!');
@@ -184,7 +186,8 @@ const RestaurantDetails = () => {
             const reviewRef = doc(db, 'reviews', reviewId);
             await updateDoc(reviewRef, {
                 reviewText: newText,
-                rating: newRating
+                rating: newRating,
+                isEdited: true
             });
 
             alert('تم تحديث المراجعة بنجاح!');
@@ -306,7 +309,7 @@ const RestaurantDetails = () => {
                     />
                     <View style={styles.ratingBadge}>
                         <Text style={styles.ratingText}>
-                            {restaurant.rating} ★
+                            ⭐ {calculateAverageRating()}
                         </Text>
                     </View>
                 </View>
@@ -424,9 +427,7 @@ const RestaurantDetails = () => {
             />
             <View style={styles.topBar}>
                 <Text style={styles.pageTitle}>{restaurant?.name}</Text>
-                <Text style={styles.ratingText}>
-                    ⭐ {calculateAverageRating()}
-                </Text>
+            
             </View>
 
             <FlatList
@@ -434,34 +435,34 @@ const RestaurantDetails = () => {
                 keyExtractor={item => item.id}
                 renderItem={({ item }) => (
                     <View style={styles.reviewCard}>
-                        <Text style={styles.reviewRating}>
-                            ⭐ {item.rating}
-                        </Text>
-                        <Text style={styles.reviewText}>{item.reviewText}</Text>
-                        {item.userId === auth.currentUser?.uid && (
-                            <>
-                                <TouchableOpacity
-                                    onPress={() =>
-                                        handleUpdateReview(item.id, 'Edited', 4)
-                                    }
-                                    style={styles.editButton}
-                                >
-                                    <Text style={styles.editButtonText}>
-                                        ✏️ Edit
-                                    </Text>
-                                </TouchableOpacity>
+                <Text style={styles.reviewRating}>
+                    ⭐ {item.rating}
+                </Text>
+                <Text style={styles.reviewText}>{item.reviewText}</Text>
 
-                                <TouchableOpacity
-                                    onPress={() => handleDeleteReview(item.id)}
-                                    style={styles.deleteButton}
-                                >
-                                    <Text style={styles.deleteButtonText}>
-                                        🗑️ Delete
-                                    </Text>
-                                </TouchableOpacity>
-                            </>
-                        )}
-                    </View>
+                {/* إظهار كلمة "Edited" إذا تم تعديل التعليق */}
+                {item.isEdited && (
+                    <Text style={styles.editedText}>Edited</Text>
+                )}
+
+                {item.userId === auth.currentUser?.uid && (
+            <>
+            <TouchableOpacity
+                onPress={() => handleUpdateReview(item.id, item.reviewText, rating)}
+                style={styles.editButton}
+            >
+                <Text style={styles.editButtonText}>✏️ Edit</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+                onPress={() => handleDeleteReview(item.id)}
+                style={styles.deleteButton}
+            >
+                <Text style={styles.deleteButtonText}>🗑️ Delete</Text>
+            </TouchableOpacity>
+        </>
+            )}
+            </View>
                 )}
             />
 
@@ -470,8 +471,8 @@ const RestaurantDetails = () => {
                 <AirbnbRating
                     count={5} // عدد النجوم المتاحة
                     defaultRating={rating} // التقييم الافتراضي
-                    size={30} // حجم النجوم
-                    onFinishRating={newRating => setRating(newRating)} // تحديث عند تغيير التقييم
+                    size={20} // حجم النجوم
+                    onFinishRating={newRating => setRating(newRating)} 
                 />
 
                 <Text style={styles.label}>write your review:</Text>
