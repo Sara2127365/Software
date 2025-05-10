@@ -1,15 +1,16 @@
 import { StyleSheet, Text, View } from 'react-native';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { Tabs } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { handleLogout } from '../../../utils/backend helpers/authCalls';
 
 const TabIcon = ({ focused, title, Icon }) => (
     <View className="flex-1 mt-3 flex flex-col items-center">
         {Icon}
         <Text
-            className={`${
-                focused ? 'text-[#CC4C4C]' : 'text-[#FF6969]'
-            } text-xs w-full text-center mt-1`}
+            className={`${focused ? 'text-[#CC4C4C]' : 'text-[#FF6969]'
+                } text-xs w-full text-center mt-1`}
         >
             {title}
         </Text>
@@ -17,6 +18,23 @@ const TabIcon = ({ focused, title, Icon }) => (
 );
 
 const _layout = () => {
+    const [role, setRole] = useState(null);
+    const [isReady, setIsReady] = useState(false);
+
+    useEffect(() => {
+        const loadData = async () => {
+            const storedRole = await AsyncStorage.getItem('role');
+            setRole(storedRole);
+            setIsReady(true);
+        };
+
+        loadData();
+    }, []);
+
+    const is_service = role === 'true';
+
+    if (!isReady) return null;
+
     return (
         <Tabs
             screenOptions={{
@@ -33,8 +51,9 @@ const _layout = () => {
             <Tabs.Screen
                 name="index"
                 options={{
-                    title: 'Home',
                     headerShown: false,
+                    title: 'Home',
+                    href: is_service ? null : undefined,
                     tabBarIcon: ({ focused }) => (
                         <TabIcon
                             focused={focused}
@@ -54,8 +73,9 @@ const _layout = () => {
             <Tabs.Screen
                 name="About"
                 options={{
-                    title: 'About',
                     headerShown: false,
+                    title: 'About',
+                    href: is_service ? null : null,
                     tabBarIcon: ({ focused }) => (
                         <TabIcon
                             focused={focused}
@@ -71,13 +91,16 @@ const _layout = () => {
                     )
                 }}
             />
+
             <Tabs.Screen
                 name="Restaurants"
                 options={{
-                    title: 'Restaurants',
                     headerShown: false,
+                    title: 'Restaurants',
+                    href: is_service ? null : undefined,
                     tabBarIcon: ({ focused }) => (
                         <TabIcon
+                            focused={focused}
                             Icon={
                                 <Icon
                                     name="list"
@@ -85,48 +108,7 @@ const _layout = () => {
                                     color={focused ? '#CC4C4C' : '#FF6969'}
                                 />
                             }
-                            focused={focused}
                             title="Restaurants"
-                        />
-                    )
-                }}
-            />
-            <Tabs.Screen
-                name="Profile"
-                options={{
-                    title: 'Profile',
-                    headerShown: false,
-                    tabBarIcon: ({ focused }) => (
-                        <TabIcon
-                            Icon={
-                                <Icon
-                                    name="user"
-                                    size={17}
-                                    color={focused ? '#CC4C4C' : '#FF6969'}
-                                />
-                            }
-                            focused={focused}
-                            title="Profile"
-                        />
-                    )
-                }}
-            />
-            <Tabs.Screen
-                name="ProfileScreen"
-                options={{
-                    title: 'ProfileScreen',
-                    headerShown: false,
-                    tabBarIcon: ({ focused }) => (
-                        <TabIcon
-                            focused={focused}
-                            Icon={
-                                <Icon
-                                    name="user"
-                                    size={17}
-                                    color={focused ? '#CC4C4C' : '#FF6969'}
-                                />
-                            }
-                            title="ProfileScreen"
                         />
                     )
                 }}
@@ -135,8 +117,9 @@ const _layout = () => {
             <Tabs.Screen
                 name="Cart"
                 options={{
-                    title: 'Cart',
                     headerShown: false,
+                    title: 'Cart',
+                    href: is_service ? null : undefined,
                     tabBarIcon: ({ focused }) => (
                         <TabIcon
                             focused={focused}
@@ -154,10 +137,79 @@ const _layout = () => {
             />
 
             <Tabs.Screen
+                name="Profile"
+                options={{
+                    headerShown: false,
+                    title: 'Profile',
+                    href: is_service ? undefined : null,
+                    tabBarIcon: ({ focused }) => (
+                        <TabIcon
+                            focused={focused}
+                            Icon={
+                                <Icon
+                                    name="user"
+                                    size={17}
+                                    color={focused ? '#CC4C4C' : '#FF6969'}
+                                />
+                            }
+                            title="Profile"
+                        />
+                    )
+                }}
+            />
+
+            <Tabs.Screen
+                name="ProfileScreen"
+                options={{
+                    headerShown: false,
+                    title: 'Profile',
+                    href: is_service ? null : undefined,
+                    tabBarIcon: ({ focused }) => (
+                        <TabIcon
+                            focused={focused}
+                            Icon={
+                                <Icon
+                                    name="user"
+                                    size={17}
+                                    color={focused ? '#CC4C4C' : '#FF6969'}
+                                />
+                            }
+                            title="Profile"
+                        />
+                    )
+                }}
+            />
+            <Tabs.Screen
+                name="PrivacyPolicy"
+                options={{
+                    headerShown: false,
+                    title: 'Profile',
+                    href: is_service ? null : undefined,
+                    tabBarIcon: ({ focused }) => (
+                        <TabIcon
+                            focused={focused}
+                            Icon={
+                                <Icon
+                                    name="home-outline"
+                                    size={17}
+                                    color={focused ? '#CC4C4C' : '#FF6969'}
+                                />
+                            }
+                            title="Profile"
+                        />
+                    )
+                }}
+            />
+
+
+
+
+            <Tabs.Screen
                 name="Dasboard"
                 options={{
-                    title: 'Dasboard',
                     headerShown: false,
+                    title: 'Dasboard',
+                    href: is_service ? undefined : null,
                     tabBarIcon: ({ focused }) => (
                         <TabIcon
                             focused={focused}

@@ -279,8 +279,6 @@ const styles = StyleSheet.create({
         zIndex: "40",
         width: '100px',
         height: "100px"
-
-
     },
     avatar2: {
         backgroundColor: '#FFA0A0',
@@ -308,7 +306,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         paddingVertical: 10,
         backgroundColor: "white",
-
     },
     bottomNav: {
         flexDirection: 'row',
@@ -330,7 +327,7 @@ const styles = StyleSheet.create({
         color: "black",
         fontSize: "20",
         fontWeight: "bold",
-        backgroundColor: '#e53935', // Material red
+        backgroundColor: '#e53935',
         paddingVertical: 10,
         paddingHorizontal: 16,
         borderRadius: 12,

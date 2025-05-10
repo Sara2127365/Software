@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { auth, db } from '../../../utils/firebase/config'; 
+import { auth, db } from '../../../utils/firebase/config';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
@@ -22,27 +22,54 @@ export default function ProfileScreen() {
       const user = auth.currentUser;
       if (!user) {
         Alert.alert('Error', 'User is not logged in!');
-        return; 
+        return;
       }
-      const docRef = doc(db, 'users', user.uid); 
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        console.log("User Data from Firestore: ", docSnap.data());
-        setUserData({ ...docSnap.data(), email: user.email });
+
+      try {
+        const docRef = doc(db, 'users', user.uid);
+        const docSnap = await getDoc(docRef);
+
+        let photoURL = '';
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          photoURL = data.photoURL;
+
+          // If photoURL isn't set in Firestore, try to fetch it from storage
+          if (!photoURL) {
+            const storage = getStorage();
+            const imageRef = ref(storage, `profilePictures/${user.uid}.jpg`);
+            try {
+              photoURL = await getDownloadURL(imageRef);
+              await updateDoc(docRef, { photoURL }); // Save for next time
+            } catch (error) {
+              console.log("No profile image found in storage.");
+            }
+          }
+
+          setUserData({
+            ...data,
+            email: user.email,
+            photoURL,
+          });
+        }
+      } catch (err) {
+        Alert.alert('Error', 'Failed to load profile.');
+        console.error(err);
       }
     };
+
     fetchData();
   }, []);
-  
+
   const handleSave = async () => {
     const user = auth.currentUser;
     if (!user) {
       Alert.alert('Error', 'User is not logged in!');
-      return; 
+      return;
     }
-  
+
     try {
-      const docRef = doc(db, 'users', user.uid); 
+      const docRef = doc(db, 'users', user.uid);
       await updateDoc(docRef, {
         name: userData.name,
         phoneNumber: userData.phoneNumber,
@@ -56,36 +83,36 @@ export default function ProfileScreen() {
       console.error(error);
     }
   };
-  
+
   const pickAndUploadImage = async () => {
     const user = auth.currentUser;
     if (!user) {
       Alert.alert('Error', 'User is not logged in!');
       return;
     }
-  
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.7,
     });
-  
+
     if (!result || result.canceled || !result.assets || !result.assets.length) return;
-  
+
     const image = result.assets[0];
     const response = await fetch(image.uri);
     const blob = await response.blob();
-  
+
     const storage = getStorage();
     const storageRef = ref(storage, `profilePictures/${user.uid}.jpg`);
-  
+
     await uploadBytes(storageRef, blob);
     const downloadURL = await getDownloadURL(storageRef);
-  
-    const userDocRef = doc(db, 'users', user.uid); 
+
+    const userDocRef = doc(db, 'users', user.uid);
     await updateDoc(userDocRef, { photoURL: downloadURL });
-  
+
     setUserData(prev => ({ ...prev, photoURL: downloadURL }));
   };
 
@@ -177,15 +204,28 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20
   },
-  profileHeader: {
+  avatarContainer: {
     alignItems: 'center',
-    marginBottom: 20
+    justifyContent: 'center',
+    marginBottom: 20,
   },
   avatar: {
     width: 120,
     height: 120,
     borderRadius: 60,
     backgroundColor: '#f2dede',
+  },
+  placeholderAvatar: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#f2dede',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  placeholderIcon: {
+    fontSize: 40,
+    color: '#aaa',
   },
   edit: {
     color: '#cc3366',
@@ -211,22 +251,5 @@ const styles = StyleSheet.create({
   editableInput: {
     backgroundColor: '#fff',
     borderColor: '#cc3366',
-  },
-  avatarContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-  },
-  placeholderAvatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#f2dede',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  placeholderIcon: {
-    fontSize: 40,
-    color: '#aaa',
   },
 });

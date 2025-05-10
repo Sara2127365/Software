@@ -31,6 +31,7 @@ import useGetData from '../../../../utils/custom hooks/useGetData';
 import { getAllCategories } from '../../../../utils/backend helpers/foodCalls';
 
 const ServiceRegister = () => {
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
     const [isMultiSelectOpen, setIsMultiSelectOpen] = useState(false);
     const [file, setFile] = useState(null);
@@ -50,7 +51,7 @@ const ServiceRegister = () => {
     console.log('FILE FILE', file);
 
     console.log(`formData`, formData);
-321
+    321;
     function handleChange(value, id) {
         setFormData(old => ({ ...old, [id]: value }));
     }
@@ -75,10 +76,12 @@ const ServiceRegister = () => {
     };
 
     async function handleSubmit() {
+        setLoading(true);
         const result = await createServiceAccount(formData);
         if (result) {
             router.replace('/LoginPage');
         }
+        setLoading(false);
     }
 
     return (
@@ -200,6 +203,7 @@ const ServiceRegister = () => {
                         />
                     </View>
                     <LargeBtn
+                        loading={loading}
                         onPress={handleSubmit}
                         text="Register"
                         classes="py-4 mt-10 w-full bg-main-rose rounded-xl"

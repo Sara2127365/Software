@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-export default function useGetData({ isOne = false, fn }) {
+export default function useGetData({ isOne = false, fn, dependencies = [] }) {
     const [data, setData] = useState(isOne ? null : []);
     const [loading, setLoading] = useState(true); // start as loading
     const [error, setError] = useState({ status: false, message: '' });
@@ -25,7 +25,7 @@ export default function useGetData({ isOne = false, fn }) {
 
     useEffect(() => {
         getData();
-    }, []);
+    }, [...dependencies]);
 
     return {
         data,
