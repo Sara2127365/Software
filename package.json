@@ -46,7 +46,7 @@
     "react-native-flip-card": "^3.5.7",
     "react-native-gesture-handler": "~2.20.2",
     "react-native-ratings": "^8.1.0",
-    "react-native-reanimated": "^3.16.2",
+    "react-native-reanimated": "^3.17.5",
     "react-native-safe-area-context": "^4.14.1",
     "react-native-screens": "~4.4.0",
     "react-native-toast-message": "^2.2.1",
