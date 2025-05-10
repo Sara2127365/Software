@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, Image } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { auth, db } from '../../../utils/firebase/config';
 import { doc, getDoc } from 'firebase/firestore';
+import { useNavigation } from '@react-navigation/native'; // لاستخدام التنقل
 
 const Cart = () => {
   const [cart, setCart] = useState([]);
   const [total, setTotal] = useState(0);
+  const navigation = useNavigation(); // الحصول على التنقل
 
   useEffect(() => {
     const fetchCart = async () => {
       const user = auth.currentUser;
       if (user) {
         try {
-          
           const cartRef = doc(db, 'carts', user.uid);
           const cartSnap = await getDoc(cartRef);
           if (cartSnap.exists()) {
@@ -38,7 +39,7 @@ const Cart = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Your Cart</Text>
-      
+
       {/* عرض العناصر في السلة */}
       {cart.length === 0 ? (
         <Text>Your cart is empty.</Text>
@@ -51,7 +52,7 @@ const Cart = () => {
               <View style={styles.itemRow}>
                 {/* عرض صورة المنتج */}
                 <Image source={{ uri: item.image }} style={styles.productImage} />
-                
+
                 {/* عرض تفاصيل المنتج */}
                 <View style={styles.itemDetails}>
                   <Text style={styles.productName}>{item.name}</Text>
@@ -65,6 +66,13 @@ const Cart = () => {
         />
       )}
       <Text style={styles.total}>Total: {total} EGP</Text>
+
+      {/* زر التشيك أوت */}
+      {cart.length > 0 && (
+        <TouchableOpacity style={styles.checkoutButton} onPress={() => navigation.navigate('Checkout')}>
+          <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
@@ -84,12 +92,12 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 10,
     padding: 10,
-    backgroundColor: '#fff', // لون خلفية لطيف
+    backgroundColor: '#fff',
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 5,
     shadowOffset: { width: 0, height: 2 },
-    elevation: 3, // للأندرويد
+    elevation: 3,
   },
   itemRow: {
     flexDirection: 'row',
@@ -121,7 +129,17 @@ const styles = StyleSheet.create({
     marginTop: 16,
     textAlign: 'right',
   },
+  checkoutButton: {
+    backgroundColor: '#ff5733',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  checkoutButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    textAlign: 'center',
+  },
 });
-
 
 export default Cart;

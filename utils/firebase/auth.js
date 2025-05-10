@@ -1,7 +1,8 @@
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { auth, db } from './config';
 import { uploadImage } from './storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const signUp = async obj => {
     console.log(obj);
@@ -88,11 +89,7 @@ export const Login = async obj => {
         const user = userCredential.user;
 
         await setDoc(
-            doc(
-                db,
-                obj.table === 'users' ? 'users' : 'service-users',
-                user.uid
-            ),
+            doc(db, obj.table, user.uid),
             obj.table === 'users'
                 ? {
                       email: obj.email,
@@ -123,8 +120,36 @@ export const Login = async obj => {
             ]);
         }
 
-        console.log('User signed up and data saved!');
         return { success: true, uid: user.uid };
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
+
+export const login = async obj => {
+    try {
+        const userCredential = await signInWithEmailAndPassword(
+            auth,
+            obj.email,
+            obj.password
+        );
+        const user = userCredential.user;
+
+        // احضار بيانات المستخدم من Firestore
+        const docRef = doc(db, obj.table === 'users' ? 'users' : 'service-users', user.uid);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const userData = docSnap.data();
+
+            // تخزين البيانات في AsyncStorage
+            await AsyncStorage.setItem('userData', JSON.stringify(userData));
+            await AsyncStorage.setItem('status', 'true');
+
+            return { success: true, uid: user.uid, userData };
+        } else {
+            throw new Error('No user data found.');
+        }
     } catch (error) {
         throw new Error(error.message);
     }
@@ -136,7 +161,6 @@ export const getUserData = async uid => {
         const docSnap = await getDoc(userRef);
 
         if (docSnap.exists()) {
-            console.log('User data:', docSnap.data());
             return docSnap.data();
         } else if (!docSnap.exists()) {
             const serviceRef = doc(db, 'service-users', uid);
@@ -151,3 +175,4 @@ export const getUserData = async uid => {
         console.error('Error getting user data:', error);
     }
 };
+

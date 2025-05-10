@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, ScrollView, TextInput } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { doc, getDoc, collection, query, where, getDocs, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs,setDoc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db, auth } from '../../utils/firebase/config'; 
 import FlipCard from 'react-native-flip-card';
 import StarRating, { Rating } from 'react-native-ratings';

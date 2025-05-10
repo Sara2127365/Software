@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Modal, FlatList, StyleSheet, ScrollView, Image, TouchableWithoutFeedback } from 'react-native';
+import {
+  View, Text, TextInput, TouchableOpacity, Modal, FlatList,
+  StyleSheet, ScrollView, Image, TouchableWithoutFeedback
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Feather from '@expo/vector-icons/Feather';
@@ -7,10 +10,14 @@ import FontAwesome from "react-native-vector-icons/FontAwesome";
 import { useRouter } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { collection, doc, getDocs, setDoc, query, where } from 'firebase/firestore';
 import { auth, db } from '../../../../utils/firebase/config';
 
-const faculties = ['Faculty of Science', 'Faculty of Arts', 'Faculty of Business', 'Faculty of Law', 'Faculty of Archaeology', 'Faculty of Urban Planning', 'Faculty of Dar Al Uloom', 'Faculty of Mass Communication'];
+const faculties = [
+  'Faculty of Science', 'Faculty of Arts', 'Faculty of Business',
+  'Faculty of Law', 'Faculty of Archaeology', 'Faculty of Urban Planning',
+  'Faculty of Dar Al Uloom', 'Faculty of Mass Communication'
+];
 const states = ['Student', 'Worker'];
 
 export default function SignUp() {
@@ -39,7 +46,11 @@ export default function SignUp() {
 
   const pickFile = async (id) => {
     try {
-      const result = await DocumentPicker.getDocumentAsync({ type: 'image/*', copyToCacheDirectory: true, multiple: false });
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'image/*',
+        copyToCacheDirectory: true,
+        multiple: false
+      });
       if (!result.canceled && result.assets?.length > 0) {
         const file = result.assets[0];
         setFormData(prev => ({ ...prev, [id]: file }));
@@ -75,25 +86,31 @@ export default function SignUp() {
     }
 
     try {
-      const userRef = doc(db, "users", email);
-      const userDoc = await getDoc(userRef);
+      // Query Firestore for existing users with the same email
+      const usersRef = collection(db, 'users');
+      const emailQuery = query(usersRef, where('email', '==', email));
+      const querySnapshot = await getDocs(emailQuery);
 
-      if (userDoc.exists()) {
+      if (!querySnapshot.empty) {
         alert('البريد الإلكتروني مستخدم بالفعل في النظام');
         return;
       }
 
+      // Create a new user with email and password
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      await setDoc(doc(db, "users", email), {
+      // Use auth.currentUser.uid (which is the same as user.uid) as the document ID in Firestore
+      const userRef = doc(db, 'users', user.uid);
+      await setDoc(userRef, {
+        uid: user.uid, // saving the uid field explicitly (optional)
         name,
         email,
         phoneNumber,
         faculty: selectedFaculty,
         state: selectedState,
         logo: formData.logo ? formData.logo.uri : null,
-        password: password, // تخزين كلمة المرور كما هي
+        password, // In production, DO NOT store plaintext password
       });
 
       alert('تم إنشاء الحساب بنجاح');
@@ -134,7 +151,7 @@ export default function SignUp() {
               style={styles.input}
               placeholder="Full name"
               value={formData.name}
-              onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))} 
+              onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
             />
             <Feather name="user" size={20} color="#D3D3D3" style={styles.iconRight} />
           </View>
@@ -143,7 +160,7 @@ export default function SignUp() {
               style={styles.input}
               placeholder="Email"
               value={formData.email}
-              onChangeText={(text) => setFormData(prev => ({ ...prev, email: text }))} 
+              onChangeText={(text) => setFormData(prev => ({ ...prev, email: text }))}
             />
             <Feather name="mail" size={20} color="#D3D3D3" style={styles.iconRight} />
           </View>
@@ -152,9 +169,9 @@ export default function SignUp() {
               style={styles.input}
               placeholder="Phone Number"
               value={formData.phoneNumber}
-              onChangeText={(text) => setFormData(prev => ({ ...prev, phoneNumber: text }))} 
+              onChangeText={(text) => setFormData(prev => ({ ...prev, phoneNumber: text }))}
             />
-            <Feather name="phoneNumber" size={20} color="#D3D3D3" style={styles.iconRight} />
+            <Feather name="phone" size={20} color="#D3D3D3" style={styles.iconRight} />
           </View>
           <TouchableOpacity style={styles.input} onPress={() => setFacultyModalVisible(true)}>
             <Text>{selectedFaculty || 'Select Faculty'}</Text>
@@ -164,13 +181,13 @@ export default function SignUp() {
             <TouchableWithoutFeedback onPress={() => setFacultyModalVisible(false)}>
               <View style={styles.modalOverlay}>
                 <View style={styles.modalContent}>
-                  <FlatList 
-                    data={faculties} 
+                  <FlatList
+                    data={faculties}
                     renderItem={({ item }) => (
                       <TouchableOpacity onPress={() => handleSelectFaculty(item)} style={styles.facultyItem}>
                         <Text>{item}</Text>
                       </TouchableOpacity>
-                    )} 
+                    )}
                   />
                 </View>
               </View>
@@ -184,13 +201,13 @@ export default function SignUp() {
             <TouchableWithoutFeedback onPress={() => setStateModalVisible(false)}>
               <View style={styles.modalOverlay}>
                 <View style={styles.modalContent}>
-                  <FlatList 
-                    data={states} 
+                  <FlatList
+                    data={states}
                     renderItem={({ item }) => (
                       <TouchableOpacity onPress={() => handleSelectState(item)} style={styles.stateItem}>
                         <Text>{item}</Text>
                       </TouchableOpacity>
-                    )} 
+                    )}
                   />
                 </View>
               </View>
@@ -202,7 +219,7 @@ export default function SignUp() {
               placeholder="Password"
               secureTextEntry
               value={formData.password}
-              onChangeText={(text) => setFormData(prev => ({ ...prev, password: text }))} 
+              onChangeText={(text) => setFormData(prev => ({ ...prev, password: text }))}
             />
             <Feather name="lock" size={20} color="#D3D3D3" style={styles.iconRight} />
           </View>
@@ -224,26 +241,26 @@ const styles = StyleSheet.create({
   cameraIcon: { position: 'absolute', bottom: -5, right: -5, backgroundColor: '#FF6969', borderRadius: 20, padding: 6 },
   all: { backgroundColor: '#fff', padding: 20, borderRadius: 12 },
   inputContainer: { position: 'relative' },
-  input: { 
-    borderWidth: 1, 
-    borderColor: '#D3D3D3', 
-    padding: 12, 
-    borderRadius: 8, 
-    marginBottom: 20, 
-    fontSize: 16, 
-    backgroundColor: '#fff' 
+  input: {
+    borderWidth: 1,
+    borderColor: '#D3D3D3',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 20,
+    fontSize: 16,
+    backgroundColor: '#fff'
   },
   iconRight: { position: 'absolute', right: 12, top: '50%', transform: [{ translateY: -10 }] },
   registerButton: {
-    backgroundColor: '#FF6969', 
-    paddingVertical: 12, 
-    borderRadius: 8, 
-    alignItems: 'center', 
+    backgroundColor: '#FF6969',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
     marginTop: 30,
   },
   registerText: {
-    color: 'white', 
-    fontSize: 18, 
+    color: 'white',
+    fontSize: 18,
     fontWeight: 'bold',
   },
   modalOverlay: {
@@ -259,10 +276,10 @@ const styles = StyleSheet.create({
     padding: 20,
     maxHeight: '80%',
   },
-  avatarImage: { 
-    width: 100, 
-    height: 100, 
-    borderRadius: 50 
+  avatarImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50
   },
   facultyItem: {
     padding: 12,

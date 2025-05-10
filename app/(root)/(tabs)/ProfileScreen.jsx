@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { auth,db } from '../../../utils/firebase/config'; 
+import { auth, db } from '../../../utils/firebase/config'; 
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
@@ -89,63 +89,61 @@ export default function ProfileScreen() {
     setUserData(prev => ({ ...prev, photoURL: downloadURL }));
   };
 
-
   return (
-      <ScrollView contentContainerStyle={styles.container}>
-          <Text style={styles.welcome}>Welcome , User</Text>
-          <Text style={styles.brand}>Toomiia</Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.welcome}>Welcome, {userData.name || 'User'}</Text>
+      <Text style={styles.brand}>Toomiia</Text>
 
-          <View style={styles.avatarContainer}>
-              <TouchableOpacity onPress={pickAndUploadImage}>
-                  {userData.photoURL ? (
-                      <Image
-                          source={{ uri: userData.photoURL }}
-                          style={styles.avatar}
-                      />
-                  ) : (
-                      <View style={styles.placeholderAvatar}>
-                          <Text style={styles.placeholderIcon}>👤</Text>
-                      </View>
-                  )}
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => (isEditing ? handleSave() : setIsEditing(true))}>
-                  <Text style={styles.edit}>{isEditing ? 'Save' : 'Edit'}</Text>
-              </TouchableOpacity>
-          </View>
+      <View style={styles.avatarContainer}>
+        <TouchableOpacity onPress={pickAndUploadImage}>
+          {userData.photoURL ? (
+            <Image
+              source={{ uri: userData.photoURL }}
+              style={styles.avatar}
+            />
+          ) : (
+            <View style={styles.placeholderAvatar}>
+              <Text style={styles.placeholderIcon}>👤</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => (isEditing ? handleSave() : setIsEditing(true))}>
+          <Text style={styles.edit}>{isEditing ? 'Save' : 'Edit'}</Text>
+        </TouchableOpacity>
+      </View>
 
-
-          <View style={styles.form}>
-              <LabelInput
-                  label="Name"
-                  value={userData.name}
-                  editable={isEditing}
-                  onChangeText={text => setUserData({ ...userData, name: text })}
-              />
-              <LabelInput
-                  label="Email"
-                  value={userData.email}
-                  editable={false}
-              />
-              <LabelInput
-                  label="Phone Number"
-                  value={userData.phoneNumber}
-                  editable={isEditing}
-                  onChangeText={text => setUserData({ ...userData, phoneNumber: text })}
-              />
-              <LabelInput
-                  label="Faculty"
-                  value={userData.faculty}
-                  editable={isEditing}
-                  onChangeText={text => setUserData({ ...userData, faculty: text })}
-              />
-              <LabelInput
-                  label="You are"
-                  value={userData.type}
-                  editable={isEditing}
-                  onChangeText={text => setUserData({ ...userData, type: text })}
-              />
-          </View>
-      </ScrollView>
+      <View style={styles.form}>
+        <LabelInput
+          label="Name"
+          value={userData.name}
+          editable={isEditing}
+          onChangeText={text => setUserData({ ...userData, name: text })}
+        />
+        <LabelInput
+          label="Email"
+          value={userData.email}
+          editable={false}
+        />
+        <LabelInput
+          label="Phone Number"
+          value={userData.phoneNumber}
+          editable={isEditing}
+          onChangeText={text => setUserData({ ...userData, phoneNumber: text })}
+        />
+        <LabelInput
+          label="Faculty"
+          value={userData.faculty}
+          editable={isEditing}
+          onChangeText={text => setUserData({ ...userData, faculty: text })}
+        />
+        <LabelInput
+          label="You are"
+          value={userData.type}
+          editable={isEditing}
+          onChangeText={text => setUserData({ ...userData, type: text })}
+        />
+      </View>
+    </ScrollView>
   );
 }
 
@@ -164,82 +162,71 @@ function LabelInput({ label, value, editable = false, onChangeText }) {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        padding: 20,
-        backgroundColor: '#fff',
-        flexGrow: 1
-    },
-    welcome: {
-        fontSize: 16,
-        color: '#444'
-    },
-    brand: {
-        textAlign: 'right',
-        color: '#cc3366',
-        fontWeight: 'bold',
-        marginBottom: 20
-    },
-    profileHeader: {
-        alignItems: 'center',
-        marginBottom: 20
-    },
-    avatar: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        backgroundColor: '#f2dede'
-    },
-    edit: {
-        color: '#cc3366',
-        marginTop: 10,
-        fontSize: 16
-    },
-    form: {
-        gap: 15
-    },
-    inputGroup: {
-    },
-    label: {
-        color: '#cc3366',
-        marginBottom: 5
-    },
-    input: {
-        backgroundColor: '#f8f8f8',
-        padding: 10,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#ddd',
-        color: '#000',
-    },
-    editableInput: {
-        backgroundColor: '#fff',
-        borderColor: '#cc3366',
-    },
-    avatarContainer: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 20,
-    },
-
-    avatar: {
-        width: 120,
-        height: 120,
-        borderRadius: 60,
-        backgroundColor: '#f2dede',
-    },
-
-    placeholderAvatar: {
-        width: 120,
-        height: 120,
-        borderRadius: 60,
-        backgroundColor: '#f2dede',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-
-    placeholderIcon: {
-        fontSize: 40,
-        color: '#aaa',
-    },
-      
+  container: {
+    padding: 20,
+    backgroundColor: '#fff',
+    flexGrow: 1
+  },
+  welcome: {
+    fontSize: 16,
+    color: '#444'
+  },
+  brand: {
+    textAlign: 'right',
+    color: '#cc3366',
+    fontWeight: 'bold',
+    marginBottom: 20
+  },
+  profileHeader: {
+    alignItems: 'center',
+    marginBottom: 20
+  },
+  avatar: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#f2dede',
+  },
+  edit: {
+    color: '#cc3366',
+    marginTop: 10,
+    fontSize: 16
+  },
+  form: {
+    gap: 15
+  },
+  inputGroup: {},
+  label: {
+    color: '#cc3366',
+    marginBottom: 5
+  },
+  input: {
+    backgroundColor: '#f8f8f8',
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    color: '#000',
+  },
+  editableInput: {
+    backgroundColor: '#fff',
+    borderColor: '#cc3366',
+  },
+  avatarContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  placeholderAvatar: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#f2dede',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  placeholderIcon: {
+    fontSize: 40,
+    color: '#aaa',
+  },
 });
