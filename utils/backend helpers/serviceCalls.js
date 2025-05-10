@@ -1,4 +1,14 @@
-import { addDoc, collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
+import {
+    addDoc,
+    collection,
+    deleteDoc,
+    doc,
+    getDoc,
+    getDocs,
+    query,
+    updateDoc,
+    where
+} from 'firebase/firestore';
 import { db, storage } from '../firebase/config';
 import uuid from 'react-native-uuid'; // for generating unique IDs
 import { getDownloadURL } from 'firebase/storage';
@@ -65,6 +75,26 @@ export const getFoodsByUid = async uid => {
         return foods;
     } catch (error) {
         console.error('Error getting foods by uid:', error);
+        throw error;
+    }
+};
+
+export const deleteProduct = async productId => {
+    try {
+        await deleteDoc(doc(db, 'food', productId));
+        return true;
+    } catch (error) {
+        console.error('Error deleting product:', error);
+        throw error;
+    }
+};
+
+export const updateProduct = async (productId, updatedData) => {
+    try {
+        await updateDoc(doc(db, 'food', productId), updatedData);
+        return true;
+    } catch (error) {
+        console.error('Error updating product:', error);
         throw error;
     }
 };
