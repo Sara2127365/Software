@@ -126,19 +126,16 @@ const HomeScreen = () => {
                     style={styles.horizontalScroll}
                 >
                     {topRestaurants.slice(0, 3).map(item => (
-                        <TouchableOpacity
-                            key={item.id}
-                            style={styles.itemCard}
-                            onPress={() => addToCart(item)}
-                        >
+                        <View key={item.id} style={styles.itemCard}>
                             <Image
                                 source={{ uri: item.image }}
                                 style={styles.itemImage}
                                 resizeMode="cover"
                             />
                             <Text style={styles.itemName}>{item.name}</Text>
-                        </TouchableOpacity>
+                        </View>
                     ))}
+
                 </ScrollView>
             </View>
 
@@ -162,11 +159,7 @@ const HomeScreen = () => {
                     style={styles.horizontalScroll}
                 >
                     {topOffers.slice(0, 3).map(item => (
-                        <TouchableOpacity
-                            key={item.id}
-                            style={styles.itemCard}
-                            onPress={() => addToCart(item)}
-                        >
+                        <View key={item.id} style={styles.itemCard}>
                             <Image
                                 source={{ uri: item.image }}
                                 style={styles.itemImage}
@@ -178,8 +171,9 @@ const HomeScreen = () => {
                                 </Text>
                             </View>
                             <Text style={styles.itemOffer}>{item.offer}</Text>
-                        </TouchableOpacity>
+                        </View>
                     ))}
+
                 </ScrollView>
             </View>
 
