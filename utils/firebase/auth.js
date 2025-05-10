@@ -16,13 +16,6 @@ export const signUp = async obj => {
         )
             throw new Error('Logo and cover images are required');
 
-        if (obj.table === 'service-users') {
-            await Promise.all([
-                uploadImage(obj.logo.uri, `services/logos/${1}`),
-                uploadImage(obj.cover.uri, `services/covers/${1}`)
-            ]);
-        }
-
         const userCredential = await createUserWithEmailAndPassword(
             auth,
             obj.email,
@@ -53,11 +46,19 @@ export const signUp = async obj => {
                           : ['test', 'test'],
                       info: obj.info || 'info test',
                       phoneNumber: obj.phoneNumber || 'test phone',
-                      serviceName: obj.name || 'test name',
+                      serviceName: obj.restaurantName || 'test name',
                       password: obj.password || 'test name',
-                      createdAt: serverTimestamp()
+                      createdAt: serverTimestamp(),
+                      is_service : true
                   }
         );
+
+        if (obj.table === 'service-users') {
+            await Promise.all([
+                uploadImage(obj.logo.uri, `services/logos/${user.uid}`),
+                uploadImage(obj.cover.uri, `services/covers/${user.uid}`)
+            ]);
+        }
 
         console.log('User signed up and data saved!');
         return { success: true, uid: user.uid };
@@ -137,6 +138,12 @@ export const getUserData = async uid => {
         if (docSnap.exists()) {
             console.log('User data:', docSnap.data());
             return docSnap.data();
+        } else if (!docSnap.exists()) {
+            const serviceRef = doc(db, 'service-users', uid);
+            const docSnap2 = await getDoc(serviceRef);
+            if (docSnap2.exists) {
+                return docSnap2.data();
+            }
         } else {
             console.log('No such document!');
         }

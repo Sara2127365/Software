@@ -8,7 +8,8 @@ export async function createServiceAccount(formData) {
     try {
         const result = await signUp({
             ...formData,
-            table: 'service-users'
+            table: 'service-users',
+            is_service : true
         });
         console.log('result result result', result);
         if (result.success) {
@@ -65,7 +66,11 @@ export const handleLogin = async obj => {
             obj.password
         );
         const user = userCredential.user;
-        await getUserData(user.uid);
+        const userData = await getUserData(user.uid);
+
+        AsyncStorage.setItem('uid',user.uid)
+        console.log('userData' , userData);
+        
 
         Toast.show({
             type: 'success',
@@ -73,7 +78,7 @@ export const handleLogin = async obj => {
             text2: 'Logged In successfully',
             position: 'top'
         });
-        return true;
+        return userData || true
     } catch (error) {
         Toast.show({
             type: 'error',
@@ -88,6 +93,7 @@ export const handleLogout = async () => {
     try {
         await signOut(auth);
         AsyncStorage.removeItem('status');
+        AsyncStorage.removeItem('uid');
         console.log('DONEEEEEEEEEEEE');
         return true;
     } catch (error) {

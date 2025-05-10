@@ -16,6 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { db } from '../../../utils/firebase/config';
 import { collection, getDocs } from 'firebase/firestore';
 import { useCart } from '../../context/cartcontext';  // Ensure the path to CartContext is correct
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const HomeScreen = () => {
     const router = useRouter();

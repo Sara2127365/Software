@@ -12,14 +12,20 @@ import '../../../app/globals'
 export default function Profile() {
     const navigation = useNavigation()
     const [RestaurantData, setRestaurantData] = useState({})
-    const [id, setId] = useState(auth.currentUser.uid)
+    const [id, setId] = useState(auth?.currentUser?.uid)
     const [logo, setLogo] = useState("")
     const [cover, setCover] = useState("")
+
+    console.log('auth' , auth);
+    console.log('auth?.currentUser' , auth?.currentUser);
+    
 
     // Get Data
     async function getUserData(userId) {
         try {
             const docRef = doc(db, "service-users", userId);
+            console.log('docref' , docRef);
+            
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
                 setRestaurantData(docSnap.data());
@@ -211,7 +217,7 @@ export default function Profile() {
                     <Text style={styles.label}>Info</Text>
                     <TextInput style={styles.input} editable={editBtn} value={RestaurantData.info} onChangeText={(e) => { handleChange("info", e) }} />
 
-                    <Pressable style={styles.deleteBtn} onPress={() => deleteUser()}>Delete</Pressable>
+                    {/* <Pressable style={styles.deleteBtn} onPress={() => deleteUser()}>Delete</Pressable> */}
                 </View>
 
             </View>
@@ -224,7 +230,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#f2f2f2',
         paddingHorizontal: 16,
-        paddingTop: "20px",
+        paddingTop: 20,
     },
     header: {
         flexDirection: 'row',
@@ -243,22 +249,22 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         marginTop: 16,
         alignItems: 'center',
-        backgroundColor: "white",
-        padding: '7px',
-        borderRadius: "10px"
+        backgroundColor: 'white',
+        padding: 7,
+        borderRadius: 10,
     },
     editBtn: {
         color: '#FF6969',
         fontWeight: '500',
-        fontSize: "20px"
+        fontSize: 20,
     },
     coverSection: {
-        alignItems: "flex-start",
+        alignItems: 'flex-start',
         marginVertical: 20,
     },
     coverBox: {
         width: '100%',
-        height: "130px",
+        height: 130,
         backgroundColor: '#f26666',
         borderRadius: 10,
         justifyContent: 'center',
@@ -274,24 +280,22 @@ const styles = StyleSheet.create({
         borderRadius: 50,
         padding: 3,
         marginTop: -40,
-        marginLeft: "50px",
+        marginLeft: 50,
         borderWidth: 4,
         borderColor: '#fff',
-        zIndex: "40",
-        width: '100px',
-        height: "100px"
-
-
+        zIndex: 40,
+        width: 100,
+        height: 100,
     },
     avatar2: {
         backgroundColor: '#FFA0A0',
         borderRadius: 50,
         padding: 3,
         marginTop: -40,
-        marginLeft: "50px",
+        marginLeft: 50,
         borderWidth: 4,
         borderColor: '#fff',
-        zIndex: "40",
+        zIndex: 40,
     },
     form: {
         gap: 10,
@@ -304,12 +308,10 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     input: {
-        backgroundColor: '#white',
+        backgroundColor: 'white',
         borderRadius: 8,
         paddingHorizontal: 12,
         paddingVertical: 10,
-        backgroundColor: "white",
-
     },
     bottomNav: {
         flexDirection: 'row',
@@ -326,11 +328,11 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     deleteBtn: {
-        width: "25%",
-        marginTop: "3px",
-        color: "black",
-        fontSize: "20",
-        fontWeight: "bold",
+        width: '25%',
+        marginTop: 3,
+        color: 'black',
+        fontSize: 20,
+        fontWeight: 'bold',
         backgroundColor: '#e53935', // Material red
         paddingVertical: 10,
         paddingHorizontal: 16,
