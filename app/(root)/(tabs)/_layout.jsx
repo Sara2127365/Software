@@ -114,7 +114,6 @@ const _layout = () => {
             />
 
             <Tabs.Screen
-            <Tabs.Screen
                 name="Cart"
                 options={{
                     headerShown: false,
