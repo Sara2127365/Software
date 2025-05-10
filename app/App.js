@@ -11,8 +11,7 @@ function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Cart">
-        <Stack.Screen name="Cart" component={Cart} />
-        <Stack.Screen name="Checkout" component={Checkout} />
+
       </Stack.Navigator>
     </NavigationContainer>
   );
