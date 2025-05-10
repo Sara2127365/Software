@@ -135,7 +135,6 @@ const HomeScreen = () => {
                             <Text style={styles.itemName}>{item.name}</Text>
                         </View>
                     ))}
-
                 </ScrollView>
             </View>
 
@@ -173,7 +172,6 @@ const HomeScreen = () => {
                             <Text style={styles.itemOffer}>{item.offer}</Text>
                         </View>
                     ))}
-
                 </ScrollView>
             </View>
 
@@ -190,12 +188,21 @@ const HomeScreen = () => {
             </View>
 
             {/* Footer */}
-            <View style={styles.footer}>
+            <View className='flex'>
                 <TouchableOpacity
+                    className="!mb-1"
                     style={styles.knowMoreButton}
                     onPress={() => router.push('/About')}
                 >
                     <Text style={styles.knowMoreText}>Know more about us</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={styles.knowMoreButton}
+                    className="mb-20"
+                    onPress={() => router.push('/privacypolicy')}
+                >
+                    <Text style={styles.knowMoreText}>Privacy and Policy</Text>
                 </TouchableOpacity>
             </View>
         </ScrollView>
