@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { Tabs } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { handleLogout } from '../../../utils/backend helpers/authCalls';
 
 const TabIcon = ({ focused, title, Icon }) => (
     <View className="flex-1 mt-3 flex flex-col items-center">
@@ -53,7 +52,7 @@ const _layout = () => {
                 options={{
                     headerShown: false,
                     title: 'Home',
-                    href: is_service ? null : undefined,
+                    href: is_service ? null : '/', // Changed from undefined to '/'
                     tabBarIcon: ({ focused }) => (
                         <TabIcon
                             focused={focused}
@@ -159,6 +158,28 @@ const _layout = () => {
             />
 
             <Tabs.Screen
+                name="Checkout"
+                options={{
+                    headerShown: false,
+                    title: 'Profile',
+                    href: is_service ? null : null,
+                    tabBarIcon: ({ focused }) => (
+                        <TabIcon
+                            focused={focused}
+                            Icon={
+                                <Icon
+                                    name="user"
+                                    size={17}
+                                    color={focused ? '#CC4C4C' : '#FF6969'}
+                                />
+                            }
+                            title="Profile"
+                        />
+                    )
+                }}
+            />
+
+            <Tabs.Screen
                 name="ProfileScreen"
                 options={{
                     headerShown: false,
@@ -179,30 +200,6 @@ const _layout = () => {
                     )
                 }}
             />
-            <Tabs.Screen
-                name="PrivacyPolicy"
-                options={{
-                    headerShown: false,
-                    title: 'Profile',
-                    href: is_service ? null : undefined,
-                    tabBarIcon: ({ focused }) => (
-                        <TabIcon
-                            focused={focused}
-                            Icon={
-                                <Icon
-                                    name="home-outline"
-                                    size={17}
-                                    color={focused ? '#CC4C4C' : '#FF6969'}
-                                />
-                            }
-                            title="Profile"
-                        />
-                    )
-                }}
-            />
-
-
-
 
             <Tabs.Screen
                 name="Dasboard"

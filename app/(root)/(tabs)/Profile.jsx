@@ -1,52 +1,120 @@
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
-import { db, storage, auth } from '../../../utils/firebase/config'
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { db, storage, auth } from '../../../utils/firebase/config';
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, Pressable } from 'react-native';
+import {
+    View,
+    Text,
+    TextInput,
+    StyleSheet,
+    Image,
+    TouchableOpacity,
+    Pressable,
+    Alert,
+    ScrollView
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Loading from "../../../components/onboarding/Loading";
+import Loading from '../../../components/onboarding/Loading';
 import { getStorage, ref, getDownloadURL, uploadBytes } from 'firebase/storage';
 import * as DocumentPicker from 'expo-document-picker';
-import { useNavigation } from "expo-router";
-import '../../../app/globals'
+import { useNavigation } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import '../../../app/globals';
 
 export default function Profile() {
-    const navigation = useNavigation()
-    const [RestaurantData, setRestaurantData] = useState({})
-    const [id, setId] = useState(auth.currentUser.uid)
-    const [logo, setLogo] = useState("")
-    const [cover, setCover] = useState("")
+    const [uid, setUid] = useState(null);
+    const navigation = useNavigation();
+    const [restaurantData, setRestaurantData] = useState({
+        serviceName: '',
+        email: '',
+        phoneNumber: '',
+        categories: [],
+        info: ''
+    });
+    const [logo, setLogo] = useState('');
+    const [cover, setCover] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [editMode, setEditMode] = useState(false);
+    const [uploading, setUploading] = useState(false);
 
-    // Get Data
+    useEffect(() => {
+        const fetchUid = async () => {
+            try {
+                const storedUid = await AsyncStorage.getItem('uid');
+                if (storedUid) {
+                    setUid(storedUid);
+                } else if (auth?.currentUser?.uid) {
+                    setUid(auth.currentUser.uid);
+                }
+            } catch (error) {
+                console.error('Error fetching UID:', error);
+                Alert.alert('Error', 'Failed to load user data');
+            }
+        };
+        fetchUid();
+    }, []);
+
+    // Get user data
+    useEffect(() => {
+        if (!uid) return;
+
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await getUserData(uid);
+                if (data) {
+                    setRestaurantData(prev => ({
+                        ...prev,
+                        ...data,
+                        categories: Array.isArray(data.categories)
+                            ? data.categories
+                            : []
+                    }));
+                }
+                await getImageUrl();
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                Alert.alert('Error', 'Failed to load profile data');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [uid]);
+
     async function getUserData(userId) {
         try {
-            const docRef = doc(db, "service-users", userId);
+            const docRef = doc(db, 'service-users', userId);
             const docSnap = await getDoc(docRef);
+
             if (docSnap.exists()) {
-                setRestaurantData(docSnap.data());
                 return docSnap.data();
-            } else {
-                console.log("No user!");
-                return null;
             }
+            return null;
         } catch (error) {
-            console.error("Error fetching user:", error);
+            console.error('Error fetching user:', error);
             throw error;
         }
     }
 
-    // Update User
+    // Update user data
     const updateUser = async () => {
-        const userId = id;
-        const userRef = doc(db, 'service-users', userId);
+        if (!uid) return;
+
         try {
-            await updateDoc(userRef, RestaurantData);  // Update Firestore with new data
+            setLoading(true);
+            const userRef = doc(db, 'service-users', uid);
+            await updateDoc(userRef, restaurantData);
+            Alert.alert('Success', 'Profile updated successfully');
+            setEditMode(false);
         } catch (error) {
             console.error('Error updating user:', error);
+            Alert.alert('Error', 'Failed to update profile');
+        } finally {
+            setLoading(false);
         }
-        setEditBtn(!editBtn);
     };
 
-    const [editBtn, setEditBtn] = useState(false);
     const handleChange = (field, text) => {
         setRestaurantData(prev => ({
             ...prev,
@@ -54,287 +122,424 @@ export default function Profile() {
         }));
     };
 
-    const [isMultiSelectOpen, setIsMultiSelectOpen] = useState(false);
-
     const getImageUrl = async () => {
+        if (!uid) return;
+
         const storage = getStorage();
-        const coverImg = ref(storage, `services/covers/${id}`);
-        const logoImg = ref(storage, `services/logos/${id}`);
+        const coverImg = ref(storage, `services/covers/${uid}`);
+        const logoImg = ref(storage, `services/logos/${uid}`);
+
         try {
-            const url1 = await getDownloadURL(coverImg);
-            const url2 = await getDownloadURL(logoImg);
+            const [url1, url2] = await Promise.all([
+                getDownloadURL(coverImg).catch(() => ''),
+                getDownloadURL(logoImg).catch(() => '')
+            ]);
             setCover(url1);
             setLogo(url2);
         } catch (error) {
-            console.error('Error fetching image:', error);
-            return null;
+            console.error('Error fetching images:', error);
         }
     };
 
-    const handleEdit = () => {
-        setEditBtn(!editBtn);
-    };
-
-    useEffect(() => {
-        getUserData(id);
-        getImageUrl();
-    }, []);
-
     const uploadImage = async (uri, imgName) => {
-        const imageRef = ref(storage, `services/${imgName}/${id}`);
+        if (!uid) return null;
+
         try {
+            setUploading(true);
+            const imageRef = ref(storage, `services/${imgName}/${uid}`);
             const response = await fetch(uri);
             const blob = await response.blob();
 
             await uploadBytes(imageRef, blob);
-            console.log('Image uploaded successfully!');
-
-            const url = await getDownloadURL(imageRef);
-            return url;
-
+            return await getDownloadURL(imageRef);
         } catch (error) {
             console.error('Error uploading image:', error);
+            Alert.alert('Error', 'Failed to upload image');
             return null;
+        } finally {
+            setUploading(false);
         }
     };
 
-    const handleFileUpload = async (name) => {
-        const fileUri = await pickDocument();
-        if (fileUri) {
-            const downloadUrl = await uploadImage(fileUri, name);
-            if (downloadUrl) {
-                getImageUrl(); // Refresh images after upload
-            }
+    const handleFileUpload = async name => {
+        const result = await DocumentPicker.getDocumentAsync({
+            type: 'image/*',
+            copyToCacheDirectory: true
+        });
+
+        if (result.canceled) return;
+
+        const fileUri = result.assets[0].uri;
+        const downloadUrl = await uploadImage(fileUri, name);
+        if (downloadUrl) {
+            getImageUrl(); // Refresh images
         }
     };
 
-    // Function to pick image from device gallery
-    const pickDocument = async () => {
-        try {
-            const result = await DocumentPicker.getDocumentAsync({
-                type: 'image/*',
-                copyToCacheDirectory: true,
-                multiple: false,
-            });
-
-            if (result.canceled === true) return null;
-
-            const file = result.assets[0];
-            return file.uri;
-        } catch (error) {
-            console.error('Error picking document:', error);
-            return null;
-        }
-    };
-
-    // Function to handle registration
-    const handleSignUp = async () => {
-        if (editBtn) {
-            // Save the data to Firestore upon registration
-            try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-
-                await setDoc(doc(db, 'service-users', user.uid), {
-                    serviceName: RestaurantData.serviceName,
-                    email: RestaurantData.email,
-                    phoneNumber: RestaurantData.phoneNumber,
-                    categories: [],
-                    info: '',
-                    createdAt: new Date(),
-                });
-
-                navigation.navigate('Profile');  // Redirect to Profile page after successful registration
-            } catch (error) {
-                console.error(error);
-                alert('Error during sign up: ' + error.message);
-            }
-        } else {
-            // Update profile data
+    const toggleEditMode = () => {
+        if (editMode) {
             updateUser();
+        } else {
+            setEditMode(true);
         }
     };
+
+    const renderCategories = () => {
+        if (
+            !restaurantData.categories ||
+            restaurantData.categories.length === 0
+        ) {
+            return <Text style={styles.input}>No categories selected</Text>;
+        }
+        return (
+            <Text style={styles.input}>
+                {restaurantData.categories.join(', ')}
+            </Text>
+        );
+    };
+
+    if (loading) {
+        return <Loading />;
+    }
 
     return (
-        Object.keys(RestaurantData).length > 0 ? (
-            <View style={styles.container}>
-                <View style={styles.header}>
-                    <Text style={styles.welcome}>Welcome, User</Text>
-                    <Text style={styles.brand}>Toomiia</Text>
-                </View>
-                <View style={styles.backRow}>
-                    <Pressable onPress={() => navigation.goBack()}>
-                        <Ionicons name="arrow-back" size={28} color="#f26666" />
-                    </Pressable>
-
-                    <TouchableOpacity>
-                        <Text onPress={handleEdit} style={styles.editBtn}>
-                            {editBtn ? <Text onPress={handleSignUp}>Submit</Text> : "Edit"}
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-
-                <View style={styles.coverSection}>
-                    <TouchableOpacity onPress={() => handleFileUpload("covers")} style={styles.coverBox}>
-                        {cover.length > 0 ? <Image style={styles.coverBox} source={{ uri: cover }} width={100} height={100} />
-                            : <View style={styles.coverBox}>
-                                <Text style={styles.coverText}>C O V E R</Text>
-                            </View>
-                        }
-                    </TouchableOpacity>
-
-                    <TouchableOpacity onPress={() => handleFileUpload("logos")}>
-                        {logo.length > 0 ? <Image source={{ uri: logo }} style={styles.avatar} />
-                            : <View style={styles.avatar}>
-                                <Ionicons name="person" size={50} color="white" />
-                            </View>}
-                    </TouchableOpacity>
-                </View>
-
-                <View style={styles.form}>
-                    <Text style={styles.label}>Service Name</Text>
-                    <TextInput style={styles.input} editable={editBtn} value={RestaurantData.serviceName} onChangeText={(e) => { handleChange("serviceName", e) }} />
-
-                    <Text style={styles.label}>Email</Text>
-                    <TextInput keyboardType="email-address" style={styles.input} editable={editBtn} value={RestaurantData.email} onChangeText={(e) => { handleChange("email", e) }} />
-
-                    <Text style={styles.label}>Phone Number</Text>
-                    <TextInput keyboardType="numeric" autoCapitalize="none" style={styles.input} editable={editBtn} value={RestaurantData.phoneNumber} onChangeText={(e) => { handleChange("phoneNumber", e) }} />
-
-                    <Text style={styles.label}>Categories</Text>
-                    <Text style={styles.input}>
-                        {RestaurantData.categories.map((t, index) => {
-                            return <Text key={index}>{t + ","} </Text>
-                        })}
+        <ScrollView
+            className="mb-10"
+            style={styles.container}
+            contentContainerStyle={styles.scrollContent}
+        >
+            {/* Header Section */}
+            <View style={styles.header}>
+                <Pressable
+                    onPress={() => setEditMode(false)} // Remove the parentheses to pass the function reference
+                    style={styles.backButton}
+                >
+                    {editMode && <Text style={styles.cancelText}>Cancel</Text>}
+                </Pressable>
+                <Text style={styles.headerTitle}>Profile</Text>
+                <TouchableOpacity
+                    onPress={toggleEditMode}
+                    disabled={loading || uploading}
+                    style={styles.editButton}
+                >
+                    <Text style={styles.editButtonText}>
+                        {editMode ? 'Save' : 'Edit'}
                     </Text>
+                </TouchableOpacity>
+            </View>
 
-                    <Text style={styles.label}>Info</Text>
-                    <TextInput style={styles.input} editable={editBtn} value={RestaurantData.info} onChangeText={(e) => { handleChange("info", e) }} />
-
+            {/* Profile Image Section */}
+            <View style={styles.profileHeader}>
+                <View style={styles.coverPhotoContainer}>
+                    <TouchableOpacity
+                        onPress={() => handleFileUpload('covers')}
+                        disabled={!editMode || uploading}
+                    >
+                        {cover ? (
+                            <Image
+                                source={{ uri: cover }}
+                                style={styles.coverPhoto}
+                                resizeMode="cover"
+                            />
+                        ) : (
+                            <View
+                                style={[
+                                    styles.coverPhoto,
+                                    styles.coverPlaceholder
+                                ]}
+                            >
+                                <Ionicons
+                                    name="image"
+                                    size={32}
+                                    color="#FF6969"
+                                />
+                                {editMode && (
+                                    <Text style={styles.uploadPrompt}>
+                                        Tap to upload cover
+                                    </Text>
+                                )}
+                            </View>
+                        )}
+                    </TouchableOpacity>
                 </View>
 
+                <View style={styles.profilePhotoContainer}>
+                    <TouchableOpacity
+                        onPress={() => handleFileUpload('logos')}
+                        disabled={!editMode || uploading}
+                    >
+                        {logo ? (
+                            <Image
+                                source={{ uri: logo }}
+                                style={styles.profilePhoto}
+                                resizeMode="cover"
+                            />
+                        ) : (
+                            <View
+                                style={[
+                                    styles.profilePhoto,
+                                    styles.profilePlaceholder
+                                ]}
+                            >
+                                <Ionicons
+                                    name="person"
+                                    size={40}
+                                    color="white"
+                                />
+                            </View>
+                        )}
+                        {editMode && (
+                            <View style={styles.editPhotoBadge}>
+                                <Ionicons
+                                    name="camera"
+                                    size={16}
+                                    color="white"
+                                />
+                            </View>
+                        )}
+                    </TouchableOpacity>
+                </View>
             </View>
-        ) : <Loading />
+
+            {/* Welcome Text */}
+            <Text style={styles.welcomeText}>
+                Welcome back, {restaurantData.serviceName || 'User'}!
+            </Text>
+
+            {/* Form Section */}
+            <View style={styles.formContainer}>
+                <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Service Name</Text>
+                    <TextInput
+                        style={styles.inputField}
+                        editable={editMode}
+                        value={restaurantData.serviceName || ''}
+                        onChangeText={text => handleChange('serviceName', text)}
+                        placeholder="Your service name"
+                        placeholderTextColor="#999"
+                    />
+                </View>
+
+                <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Email</Text>
+                    <TextInput
+                        keyboardType="email-address"
+                        style={styles.inputField}
+                        editable={editMode}
+                        value={restaurantData.email || ''}
+                        onChangeText={text => handleChange('email', text)}
+                        placeholder="your@email.com"
+                        placeholderTextColor="#999"
+                    />
+                </View>
+
+                <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Phone Number</Text>
+                    <TextInput
+                        keyboardType="phone-pad"
+                        style={styles.inputField}
+                        editable={editMode}
+                        value={restaurantData.phoneNumber || ''}
+                        onChangeText={text => handleChange('phoneNumber', text)}
+                        placeholder="+1 (___) ___-____"
+                        placeholderTextColor="#999"
+                    />
+                </View>
+
+                <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Categories</Text>
+                    <View style={styles.categoriesContainer}>
+                        {restaurantData.categories?.length > 0 ? (
+                            restaurantData.categories.map((category, index) => (
+                                <View key={index} style={styles.categoryPill}>
+                                    <Text style={styles.categoryText}>
+                                        {category}
+                                    </Text>
+                                </View>
+                            ))
+                        ) : (
+                            <Text style={styles.noCategoriesText}>
+                                No categories selected
+                            </Text>
+                        )}
+                    </View>
+                </View>
+
+                <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>About</Text>
+                    <TextInput
+                        style={[styles.inputField, styles.multilineInput]}
+                        editable={editMode}
+                        multiline
+                        numberOfLines={4}
+                        value={restaurantData.info || ''}
+                        onChangeText={text => handleChange('info', text)}
+                        placeholder="Tell us about your service..."
+                        placeholderTextColor="#999"
+                    />
+                </View>
+            </View>
+
+            {/* Uploading Indicator */}
+            {uploading && (
+                <View style={styles.uploadingOverlay}>
+                    <ActivityIndicator size="large" color="#FF6969" />
+                    <Text style={styles.uploadingText}>Uploading...</Text>
+                </View>
+            )}
+        </ScrollView>
     );
-};
+}
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f2f2f2',
-        paddingHorizontal: 16,
-        paddingTop: "20px",
+        backgroundColor: '#F8F8F8'
+    },
+    scrollContent: {
+        paddingBottom: 40
     },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-    },
-    welcome: {
-        fontSize: 18,
-    },
-    brand: {
-        fontSize: 20,
-        color: '#CC4C4C',
-        fontWeight: 'bold',
-    },
-    backRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: 16,
         alignItems: 'center',
-        backgroundColor: "white",
-        padding: '7px',
-        borderRadius: "10px"
+        padding: 16,
+        backgroundColor: 'white',
+        borderBottomWidth: 1,
+        borderBottomColor: '#EEE'
     },
-    editBtn: {
+    backButton: {
+        padding: 8
+    },
+    headerTitle: {
+        fontSize: 20,
+        fontWeight: '600',
+        color: '#333'
+    },
+    editButton: {
+        padding: 8
+    },
+    editButtonText: {
         color: '#FF6969',
-        fontWeight: '500',
-        fontSize: "20px"
+        fontSize: 16,
+        fontWeight: '500'
     },
-    coverSection: {
-        alignItems: "flex-start",
-        marginVertical: 20,
+    profileHeader: {
+        marginBottom: 24
     },
-    coverBox: {
+    coverPhotoContainer: {
+        height: 160,
+        backgroundColor: '#F0F0F0'
+    },
+    coverPhoto: {
         width: '100%',
-        height: "130px",
-        backgroundColor: '#f26666',
-        borderRadius: 10,
+        height: '100%'
+    },
+    coverPlaceholder: {
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: '#FFE9E9'
     },
-    coverText: {
-        color: 'white',
-        fontSize: 25,
-        letterSpacing: 2,
+    uploadPrompt: {
+        marginTop: 8,
+        color: '#FF6969',
+        fontSize: 14
     },
-    avatar: {
-        backgroundColor: '#FFA0A0',
+    profilePhotoContainer: {
+        position: 'absolute',
+        bottom: -40,
+        left: 16
+    },
+    profilePhoto: {
+        width: 100,
+        height: 100,
         borderRadius: 50,
-        padding: 3,
-        marginTop: -40,
-        marginLeft: "50px",
         borderWidth: 4,
-        borderColor: '#fff',
-        zIndex: "40",
-        width: '100px',
-        height: "100px"
+        borderColor: 'white'
     },
-    avatar2: {
-        backgroundColor: '#FFA0A0',
-        borderRadius: 50,
-        padding: 3,
-        marginTop: -40,
-        marginLeft: "50px",
-        borderWidth: 4,
-        borderColor: '#fff',
-        zIndex: "40",
+    profilePlaceholder: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#FFA0A0'
     },
-    form: {
-        gap: 10,
+    editPhotoBadge: {
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+        backgroundColor: '#FF6969',
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 2,
+        borderColor: 'white'
     },
-    inputContainer: {
-        marginBottom: 8,
-    },
-    label: {
-        color: '#f26666',
+    welcomeText: {
+        fontSize: 22,
         fontWeight: '600',
+        color: '#333',
+        marginTop: 56,
+        marginHorizontal: 16,
+        marginBottom: 24
     },
-    input: {
-        backgroundColor: '#white',
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        backgroundColor: "white",
+    formContainer: {
+        paddingHorizontal: 16
     },
-    bottomNav: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        paddingTop: 20,
-        paddingBottom: 30,
-        borderTopWidth: 1,
-        borderColor: '#eee',
-        marginTop: 'auto',
+    inputGroup: {
+        marginBottom: 20
     },
-    navText: {
-        fontSize: 12,
-        color: '#f26666',
-        textAlign: 'center',
+    inputLabel: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#FF6969',
+        marginBottom: 8
     },
-    deleteBtn: {
-        width: "25%",
-        marginTop: "3px",
-        color: "black",
-        fontSize: "20",
-        fontWeight: "bold",
-        backgroundColor: '#e53935',
-        paddingVertical: 10,
-        paddingHorizontal: 16,
+    inputField: {
+        backgroundColor: 'white',
         borderRadius: 12,
-        shadowColor: '#000',
-        shadowOpacity: 0.1,
-        shadowOffset: { width: 0, height: 2 },
-        shadowRadius: 4,
-        elevation: 3,
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        fontSize: 16,
+        color: '#333',
+        borderWidth: 1,
+        borderColor: '#EEE'
     },
+    multilineInput: {
+        minHeight: 100,
+        textAlignVertical: 'top'
+    },
+    categoriesContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        marginTop: 8
+    },
+    categoryPill: {
+        backgroundColor: '#FFE9E9',
+        borderRadius: 16,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        marginRight: 8,
+        marginBottom: 8
+    },
+    categoryText: {
+        color: '#FF6969',
+        fontSize: 14
+    },
+    noCategoriesText: {
+        color: '#999',
+        fontSize: 16,
+        paddingVertical: 14
+    },
+    uploadingOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    uploadingText: {
+        marginTop: 16,
+        color: '#FF6969',
+        fontSize: 16
+    }
 });
