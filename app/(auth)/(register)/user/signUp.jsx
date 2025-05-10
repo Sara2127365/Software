@@ -11,6 +11,7 @@ import { useRouter } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { collection, doc, getDocs, setDoc, query, where } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { auth, db } from '../../../../utils/firebase/config';
 
 const faculties = [
@@ -19,6 +20,23 @@ const faculties = [
   'Faculty of Dar Al Uloom', 'Faculty of Mass Communication'
 ];
 const states = ['Student', 'Worker'];
+
+const uploadImageToFirebase = async (file, uid) => {
+  try {
+    const response = await fetch(file.uri);
+    const blob = await response.blob();
+
+    const storage = getStorage();
+    const storageRef = ref(storage, `profilePictures/${uid}.jpg`);
+
+    await uploadBytes(storageRef, blob);
+    const downloadURL = await getDownloadURL(storageRef);
+    return downloadURL;
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    return null;
+  }
+};
 
 export default function SignUp() {
   const router = useRouter();
@@ -61,7 +79,7 @@ export default function SignUp() {
   };
 
   const handleRegisterSubmit = async () => {
-    const { name, email, phoneNumber, password } = formData;
+    const { name, email, phoneNumber, password, logo } = formData;
 
     if (!name || !email || !phoneNumber || !password || !selectedFaculty || !selectedState) {
       alert('يرجى ملء جميع الحقول');
@@ -86,7 +104,6 @@ export default function SignUp() {
     }
 
     try {
-      // Query Firestore for existing users with the same email
       const usersRef = collection(db, 'users');
       const emailQuery = query(usersRef, where('email', '==', email));
       const querySnapshot = await getDocs(emailQuery);
@@ -96,21 +113,23 @@ export default function SignUp() {
         return;
       }
 
-      // Create a new user with email and password
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Use auth.currentUser.uid (which is the same as user.uid) as the document ID in Firestore
+      let imageUrl = null;
+      if (logo) {
+        imageUrl = await uploadImageToFirebase(logo, user.uid);
+      }
+
       const userRef = doc(db, 'users', user.uid);
       await setDoc(userRef, {
-        uid: user.uid, // saving the uid field explicitly (optional)
+        uid: user.uid,
         name,
         email,
         phoneNumber,
         faculty: selectedFaculty,
         state: selectedState,
-        logo: formData.logo ? formData.logo.uri : null,
-        password, // In production, DO NOT store plaintext password
+        logo: imageUrl,
       });
 
       alert('تم إنشاء الحساب بنجاح');
